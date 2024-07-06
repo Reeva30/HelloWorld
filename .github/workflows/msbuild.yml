@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 env:
-  PROJECT_FILE_PATH: HelloWorld/HelloWorld.vcxproj
+  PROJECT_FILE_PATH: HelloWorld.vcxproj
   BUILD_CONFIGURATION: Release
   DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
 
