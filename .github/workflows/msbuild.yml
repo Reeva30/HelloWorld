@@ -7,8 +7,9 @@ on:
     branches: [ "main" ]
 
 env:
-  PROJECT_FILE_PATH: HelloWorld.vcxproj
+  PROJECT_FILE_PATH: HelloWorld/HelloWorld.vcxproj
   BUILD_CONFIGURATION: Release
+  DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
 
 permissions:
   contents: read
@@ -24,12 +25,6 @@ jobs:
     - name: Add Visual Studio to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Find Visual Studio
-      id: find-vs
-      run: |
-        vs_install_path=$(vswhere -products * -requires Microsoft.Component.MSBuild -property installationPath -latest)
-        echo "VS_INSTALL_PATH=$vs_install_path" >> $GITHUB_ENV
-
     - name: Debug - List repository files
       run: dir /s
       shell: cmd
@@ -37,4 +32,4 @@ jobs:
     - name: Build
       shell: cmd
       run: |
-        "%VS_INSTALL_PATH%\Common7\IDE\devenv.com" "%PROJECT_FILE_PATH%" /Build "%BUILD_CONFIGURATION%"
+        "%DEVENV_PATH%" "%PROJECT_FILE_PATH%" /Build "%BUILD_CONFIGURATION%"
