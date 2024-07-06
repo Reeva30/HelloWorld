@@ -25,10 +25,10 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Find Visual Studio
-      id: vs
+      id: find-vs
       run: |
-        vswhere -products * -requires Microsoft.Component.MSBuild -property installationPath -latest > vs_path.txt
-        echo "::set-output name=vs_path::$(cat vs_path.txt)"
+        vs_install_path=$(vswhere -products * -requires Microsoft.Component.MSBuild -property installationPath -latest)
+        echo "VS_INSTALL_PATH=$vs_install_path" >> $GITHUB_ENV
 
     - name: Debug - List repository files
       run: dir /s
@@ -37,4 +37,4 @@ jobs:
     - name: Build
       shell: cmd
       run: |
-        "%{steps.vs.outputs.vs_path}\Common7\IDE\devenv.com" "%PROJECT_FILE_PATH%" /Build "%BUILD_CONFIGURATION%"
+        "%VS_INSTALL_PATH%\Common7\IDE\devenv.com" "%PROJECT_FILE_PATH%" /Build "%BUILD_CONFIGURATION%"
