@@ -24,31 +24,33 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Add Visual Studio to PATH
+    - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
+      with:
+        vs-version: 2022
+        components: 'Desktop development with C++'
 
+        
     - name: Debug - List repository files
       run: dir /s
       shell: cmd
 
-    - name: Install Qt Visual Studio Tools extension
+    - name: Download Qt Visual Studio Tools Extension
       run: |
-        choco install qt-vs-tools -y
-      shell: cmd
+        Invoke-WebRequest -Uri "https://download.qt.io/development_releases/vstools/qt-vs-addin-2.6.2.vsix" -OutFile "qt-vs-addin.vsix"
 
-    - name: Set Qt Environment Variables
+    - name: Install Qt Visual Studio Tools Extension
       run: |
-        echo "Setting Qt Environment Variables"
-        echo "QTDIR=${{ env.QT_PATH }}" >> $GITHUB_ENV
-        echo "QtToolsPath=${{ env.QT_PATH }}/bin" >> $GITHUB_ENV
-      shell: bash
-      
-    - name: Add Qt Path to Visual Studio 2022
+        $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+        &"$vsPath\Common7\IDE\devenv.com" /InstallVsix qt-vs-addin.vsix
+
+    - name: Set Qt Path in Visual Studio
       run: |
-        & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -find Common7\IDE\devenv.com > vsPath.txt
-        set /p VS_PATH=<vsPath.txt
-        call "%VS_PATH%" -command "Tools.Options" -cmdline "Qt;Versions;Add;Version name=6.6.1;Path=${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64"
-      shell: cmd
+        $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+        &"$vsPath\Common7\IDE\devenv.com" /command "Tools.Options"
+        &"$vsPath\Common7\IDE\devenv.com" /command "QtVersions.AddQtVersion"
+        &"$vsPath\Common7\IDE\devenv.com" /command "qtAddExistingVersion X:\OpenTwin\Repo\Third_Party_Libraries\Qt\6.6.1\msvc2019_64"
+
       
     - name: Build
       shell: cmd
