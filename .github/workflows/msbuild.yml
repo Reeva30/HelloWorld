@@ -54,21 +54,26 @@ jobs:
         echo "VS_PATH=$vsPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       shell: powershell
 
-    # Step 12: Install Qt Visual Studio Tools Extension using PowerShell script
+    # Step 12: Install Qt Visual Studio Tools Extension using vsixinstaller.exe
     - name: Install Qt Visual Studio Tools Extension
       run: |
         $vsPath = "${{ env.VS_PATH }}"
-        $extensionPath = "qt-vsaddin.vsix"
-        $targetDir = "$vsPath\Common7\IDE\Extensions"
-        if (!(Test-Path -Path $targetDir)) {
-            New-Item -ItemType Directory -Path $targetDir
+        $vsInstallerPath = "$vsPath\Common7\IDE\CommonExtensions\Microsoft\VsixInstaller\vsixinstaller.exe"
+        Write-Host "Installing the VSIX package with VSIX Installer Path: $vsInstallerPath"
+        &"$vsInstallerPath" /quiet /logFile:vsixinstaller.log "qt-vsaddin.vsix"
+        $lastExitCode = $LASTEXITCODE
+        if ($lastExitCode -ne 0) {
+          Write-Host "VSIX installation failed with exit code $lastExitCode"
+          if (Test-Path -Path vsixinstaller.log) {
+            Write-Host "VSIX installation log:"
+            Get-Content -Path vsixinstaller.log
+          } else {
+            Write-Host "VSIX installation log file was not created."
+          }
+          throw "VSIX installation failed with exit code $lastExitCode"
+        } else {
+          Write-Host "VSIX package installed successfully."
         }
-        Copy-Item -Path $extensionPath -Destination $targetDir
-        $devenvPath = "$vsPath\Common7\IDE\devenv.exe"
-        & $devenvPath /updateconfiguration
-        & $devenvPath /resetuserdata
-        & $devenvPath /installvstemplates
-        Write-Host "Qt Visual Studio Tools Extension installed successfully."
       shell: powershell
 
     # Step 13: Set Qt Path in Visual Studio
