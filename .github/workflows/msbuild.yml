@@ -26,9 +26,7 @@ jobs:
 
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
-      with:
-        vs-version: 2022
-        components: 'Desktop development with C++'
+
 
         
     - name: Debug - List repository files
@@ -38,11 +36,14 @@ jobs:
     - name: Download Qt Visual Studio Tools Extension
       run: |
         Invoke-WebRequest -Uri "https://download.qt.io/development_releases/vstools/qt-vs-addin-2.6.2.vsix" -OutFile "qt-vs-addin.vsix"
+      shell: powershell
 
+    # Step 11: Install Qt Visual Studio Tools Extension
     - name: Install Qt Visual Studio Tools Extension
       run: |
         $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
         &"$vsPath\Common7\IDE\devenv.com" /InstallVsix qt-vs-addin.vsix
+      shell: powershell
 
     - name: Set Qt Path in Visual Studio
       run: |
