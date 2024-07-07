@@ -33,6 +33,9 @@ jobs:
       run: dir /s
       shell: cmd
 
+    # Step 4: Add Visual Studio to PATH
+    - name: Add Visual Studio to PATH
+      uses: microsoft/setup-msbuild@v1.0.2
 
    # Step 10: Download Qt Visual Studio Tools Extension
     - name: Download Qt Visual Studio Tools Extension
