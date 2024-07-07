@@ -54,24 +54,11 @@ jobs:
         echo "VS_PATH=$vsPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       shell: powershell
 
-    # Step 12: Find VSIX Installer Path
-    - name: Find VSIX Installer Path
-      id: vsix-path
+    # Step 12: Install Qt Visual Studio Tools Extension using devenv.com
+    - name: Install Qt Visual Studio Tools Extension
       run: |
         $vsPath = "${{ env.VS_PATH }}"
-        $vsInstallerPath = Get-ChildItem -Path $vsPath -Recurse -Filter vsixinstaller.exe | Select-Object -First 1 -ExpandProperty FullName
-        if (-not $vsInstallerPath) {
-          throw "vsixinstaller.exe not found"
-        }
-        echo "VSIX_PATH=$vsInstallerPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-      shell: powershell
-
-    # Step 13: Install VSIX Package with detailed logging
-    - name: Install VSIX Package
-      run: |
-        $vsInstallerPath = "${{ env.VSIX_PATH }}"
-        Write-Host "Installing the VSIX package with VSIX Installer Path: $vsInstallerPath"
-        Start-Process -FilePath $vsInstallerPath -ArgumentList "/quiet", "/a", "qt-vsaddin.vsix", "/logFile:vsixinstaller.log" -Wait -NoNewWindow
+        &"$vsPath\Common7\IDE\devenv.com" /InstallVsix qt-vsaddin.vsix /Log vsixinstaller.log
         $lastExitCode = $LASTEXITCODE
         if ($lastExitCode -ne 0) {
           Write-Host "VSIX installation failed with exit code $lastExitCode"
@@ -87,7 +74,7 @@ jobs:
         }
       shell: powershell
 
-    # Step 14: Set Qt Path in Visual Studio
+    # Step 13: Set Qt Path in Visual Studio
     - name: Set Qt Path in Visual Studio
       run: |
         $vsPath = "${{ env.VS_PATH }}"
