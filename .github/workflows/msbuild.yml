@@ -74,6 +74,7 @@ jobs:
     - name: Set Qt Path in Visual Studio
       run: |
         $vsPath = "${{ env.VS_PATH }}"
+        $devenvPath = "$vsPath\Common7\IDE\devenv.com"
         Write-Host "Setting Qt Path in Visual Studio"
         &"$devenvPath" /command "Tools.Options"
         &"$devenvPath" /command "QtVersions.AddQtVersion"
