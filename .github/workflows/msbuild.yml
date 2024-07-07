@@ -33,27 +33,28 @@ jobs:
       run: dir /s
       shell: cmd
 
+
     # Step 10: Download Qt Visual Studio Tools Extension
     - name: Download Qt Visual Studio Tools Extension
       run: |
-        Invoke-WebRequest -Uri "https://download.qt.io/official_releases/vstools/v2.8.0/qt-vs-addin-2.8.0.vsix" -OutFile "qt-vs-addin.vsix"
+        Invoke-WebRequest -Uri "https://mirror.netcologne.de/qtproject/development_releases/vsaddin/2.8.0/qt-vsaddin-msvc2022-2.8.0.vsix" -OutFile "qt-vsaddin.vsix"
       shell: powershell
-
-
 
     # Step 11: Install Qt Visual Studio Tools Extension
     - name: Install Qt Visual Studio Tools Extension
       run: |
         $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
-        &"$vsPath\Common7\IDE\devenv.com" /InstallVsix qt-vs-addin.vsix
+        &"$vsPath\Common7\IDE\devenv.com" /InstallVsix qt-vsaddin.vsix
       shell: powershell
 
+    # Step 12: Set Qt Path in Visual Studio
     - name: Set Qt Path in Visual Studio
       run: |
         $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
         &"$vsPath\Common7\IDE\devenv.com" /command "Tools.Options"
         &"$vsPath\Common7\IDE\devenv.com" /command "QtVersions.AddQtVersion"
-        &"$vsPath\Common7\IDE\devenv.com" /command "qtAddExistingVersion X:\OpenTwin\Repo\Third_Party_Libraries\Qt\6.6.1\msvc2019_64"
+        &"$vsPath\Common7\IDE\devenv.com" /command "qtAddExistingVersion ${{ env.QT_PATH }}"
+      shell: powershell
 
       
     - name: Build
