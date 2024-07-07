@@ -71,11 +71,13 @@ jobs:
       run: |
         $vsInstallerPath = "${{ env.VSIX_PATH }}"
         Write-Host "Installing the VSIX package with VSIX Installer Path: $vsInstallerPath"
-        Start-Process -FilePath $vsInstallerPath -ArgumentList '-quiet', '-a', '-s', '-q', 'qt-vsaddin.vsix' -Wait -NoNewWindow -PassThru | Tee-Object -Variable vsixOutput
-        if ($vsixOutput.ExitCode -ne 0) {
+        Start-Process -FilePath $vsInstallerPath -ArgumentList '-quiet', '-a', '-s', '-q', 'qt-vsaddin.vsix' -Wait -NoNewWindow -RedirectStandardOutput vsixinstaller.log -RedirectStandardError vsixinstaller.err
+        if ($LASTEXITCODE -ne 0) {
           Write-Host "VSIX installation output:"
-          Write-Host "$vsixOutput"
-          throw "VSIX installation failed with exit code $($vsixOutput.ExitCode)"
+          Get-Content -Path vsixinstaller.log
+          Write-Host "VSIX installation error:"
+          Get-Content -Path vsixinstaller.err
+          throw "VSIX installation failed with exit code $LASTEXITCODE"
         }
         Write-Host "VSIX package installed successfully."
       shell: powershell
