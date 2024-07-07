@@ -22,13 +22,11 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v2
 
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-
-        
     - name: Debug - List repository files
       run: dir /s
       shell: cmd
@@ -37,13 +35,11 @@ jobs:
     - name: Add Visual Studio to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
-
     # Step 5: Debug - List repository files
     - name: Debug - List repository files
       run: dir /s
       shell: cmd
 
-  
     # Step 10: Download Qt Visual Studio Tools Extension
     - name: Download Qt Visual Studio Tools Extension
       run: |
@@ -69,8 +65,10 @@ jobs:
         }
         Write-Host "VSIX Installer Path: $vsInstallerPath"
         Write-Host "Installing the VSIX package..."
-        &"$vsInstallerPath" -quiet -a -s -q qt-vsaddin.vsix
+        &"$vsInstallerPath" -quiet -a -s -q qt-vsaddin.vsix | Tee-Object -Variable vsixOutput
         if ($LASTEXITCODE -ne 0) {
+          Write-Host "VSIX installation output:"
+          Write-Host "$vsixOutput"
           throw "VSIX installation failed with exit code $LASTEXITCODE"
         }
         Write-Host "VSIX package installed successfully."
@@ -85,9 +83,6 @@ jobs:
         &"$vsPath\Common7\IDE\devenv.com" /command "qtAddExistingVersion ${{ env.QT_PATH }}"
       shell: powershell
 
-
-
-      
     - name: Build
       shell: cmd
       run: |
