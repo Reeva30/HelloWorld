@@ -33,10 +33,13 @@ jobs:
       run: dir /s
       shell: cmd
 
+    # Step 10: Download Qt Visual Studio Tools Extension
     - name: Download Qt Visual Studio Tools Extension
       run: |
-        Invoke-WebRequest -Uri "https://download.qt.io/development_releases/vstools/qt-vs-addin-2.6.2.vsix" -OutFile "qt-vs-addin.vsix"
+        Invoke-WebRequest -Uri "https://download.qt.io/official_releases/vstools/v2.8.0/qt-vs-addin-2.8.0.vsix" -OutFile "qt-vs-addin.vsix"
       shell: powershell
+
+
 
     # Step 11: Install Qt Visual Studio Tools Extension
     - name: Install Qt Visual Studio Tools Extension
