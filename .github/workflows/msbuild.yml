@@ -51,29 +51,31 @@ jobs:
       id: vs-path
       run: |
         $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
-        echo "##[set-output name=vs-path;]$vsPath"
+        echo "VS_PATH=$vsPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       shell: powershell
 
     # Step 12: Find VSIX Installer Path
     - name: Find VSIX Installer Path
       id: vsix-path
       run: |
-        $vsPath = "${{ steps.vs-path.outputs.vs-path }}"
+        $vsPath = "${{ env.VS_PATH }}"
         $vsInstallerPath = Get-ChildItem -Path $vsPath -Recurse -Filter vsixinstaller.exe | Select-Object -First 1 -ExpandProperty FullName
         if (-not $vsInstallerPath) {
           throw "vsixinstaller.exe not found"
         }
-        echo "##[set-output name=vsix-path;]$vsInstallerPath"
+        echo "VSIX_PATH=$vsInstallerPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       shell: powershell
 
     # Step 13: Install VSIX Package
     - name: Install VSIX Package
       run: |
-        $vsInstallerPath = "${{ steps.vsix-path.outputs.vsix-path }}"
+        $vsInstallerPath = "${{ env.VSIX_PATH }}"
         Write-Host "Installing the VSIX package with VSIX Installer Path: $vsInstallerPath"
-        $process = Start-Process -FilePath $vsInstallerPath -ArgumentList '-quiet', '-a', '-s', '-q', 'qt-vsaddin.vsix' -PassThru -Wait -NoNewWindow
-        if ($process.ExitCode -ne 0) {
-          throw "VSIX installation failed with exit code $($process.ExitCode)"
+        Start-Process -FilePath $vsInstallerPath -ArgumentList '-quiet', '-a', '-s', '-q', 'qt-vsaddin.vsix' -Wait -NoNewWindow -PassThru | Tee-Object -Variable vsixOutput
+        if ($vsixOutput.ExitCode -ne 0) {
+          Write-Host "VSIX installation output:"
+          Write-Host "$vsixOutput"
+          throw "VSIX installation failed with exit code $($vsixOutput.ExitCode)"
         }
         Write-Host "VSIX package installed successfully."
       shell: powershell
@@ -81,7 +83,7 @@ jobs:
     # Step 14: Set Qt Path in Visual Studio
     - name: Set Qt Path in Visual Studio
       run: |
-        $vsPath = "${{ steps.vs-path.outputs.vs-path }}"
+        $vsPath = "${{ env.VS_PATH }}"
         &"$vsPath\Common7\IDE\devenv.com" /command "Tools.Options"
         &"$vsPath\Common7\IDE\devenv.com" /command "QtVersions.AddQtVersion"
         &"$vsPath\Common7\IDE\devenv.com" /command "qtAddExistingVersion ${{ env.QT_PATH }}"
