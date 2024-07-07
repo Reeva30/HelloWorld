@@ -37,7 +37,14 @@ jobs:
     - name: Add Visual Studio to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
- # Step 10: Download Qt Visual Studio Tools Extension
+
+    # Step 5: Debug - List repository files
+    - name: Debug - List repository files
+      run: dir /s
+      shell: cmd
+
+  
+    # Step 10: Download Qt Visual Studio Tools Extension
     - name: Download Qt Visual Studio Tools Extension
       run: |
         Invoke-WebRequest -Uri "https://mirror.netcologne.de/qtproject/development_releases/vsaddin/2.8.0/qt-vsaddin-msvc2022-2.8.0.vsix" -OutFile "qt-vsaddin.vsix"
@@ -61,7 +68,12 @@ jobs:
           throw "vsixinstaller.exe not found"
         }
         Write-Host "VSIX Installer Path: $vsInstallerPath"
+        Write-Host "Installing the VSIX package..."
         &"$vsInstallerPath" -quiet -a -s -q qt-vsaddin.vsix
+        if ($LASTEXITCODE -ne 0) {
+          throw "VSIX installation failed with exit code $LASTEXITCODE"
+        }
+        Write-Host "VSIX package installed successfully."
       shell: powershell
 
     # Step 13: Set Qt Path in Visual Studio
