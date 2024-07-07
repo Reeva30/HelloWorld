@@ -71,12 +71,17 @@ jobs:
       run: |
         $vsInstallerPath = "${{ env.VSIX_PATH }}"
         Write-Host "Installing the VSIX package with VSIX Installer Path: $vsInstallerPath"
-        &"$vsInstallerPath" /q /a qt-vsaddin.vsix /logFile:vsixinstaller.log
-        if ($LASTEXITCODE -ne 0) {
-          Write-Host "VSIX installation failed with exit code $LASTEXITCODE"
-          Write-Host "VSIX installation log:"
-          Get-Content -Path vsixinstaller.log
-          throw "VSIX installation failed with exit code $LASTEXITCODE"
+        Start-Process -FilePath $vsInstallerPath -ArgumentList "/quiet", "/a", "qt-vsaddin.vsix", "/logFile:vsixinstaller.log" -Wait -NoNewWindow
+        $lastExitCode = $LASTEXITCODE
+        if ($lastExitCode -ne 0) {
+          Write-Host "VSIX installation failed with exit code $lastExitCode"
+          if (Test-Path -Path vsixinstaller.log) {
+            Write-Host "VSIX installation log:"
+            Get-Content -Path vsixinstaller.log
+          } else {
+            Write-Host "VSIX installation log file was not created."
+          }
+          throw "VSIX installation failed with exit code $lastExitCode"
         } else {
           Write-Host "VSIX package installed successfully."
         }
