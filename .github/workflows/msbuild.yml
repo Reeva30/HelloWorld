@@ -31,31 +31,26 @@ jobs:
       run: dir /s
       shell: cmd
 
-    # Step 4: Add Visual Studio to PATH
     - name: Add Visual Studio to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
-    # Step 5: Debug - List repository files
     - name: Debug - List repository files
       run: dir /s
       shell: cmd
 
-    # Step 10: Download Qt Visual Studio Tools Extension
     - name: Download Qt Visual Studio Tools Extension
       run: |
         Invoke-WebRequest -Uri "https://mirror.netcologne.de/qtproject/development_releases/vsaddin/2.8.0/qt-vsaddin-msvc2022-2.8.0.vsix" -OutFile "qt-vsaddin.vsix"
       shell: powershell
 
-    # Step 11: Find and Print Visual Studio Path
-    - name: Find Visual Studio Path
+    - name: Find and Print Visual Studio Path
       id: vs-path
       run: |
         $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
         echo "VS_PATH=$vsPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       shell: powershell
 
-    # Step 12: Install Qt Visual Studio Tools Extension using devenv.com
-    - name: Install Qt Visual Studio Tools Extension
+    - name: Install Qt Visual Studio Tools Extension using devenv.com
       run: |
         $vsPath = "${{ env.VS_PATH }}"
         $devenvPath = "$vsPath\Common7\IDE\devenv.com"
@@ -70,15 +65,14 @@ jobs:
         }
       shell: powershell
 
-    # Step 13: Set Qt Path in Visual Studio
     - name: Set Qt Path in Visual Studio
       run: |
         $vsPath = "${{ env.VS_PATH }}"
+        $qtPath = "${{ env.QT_PATH }}"
         $devenvPath = "$vsPath\Common7\IDE\devenv.com"
+        $qtVersionCommand = "QtVersions.AddQtVersion $qtPath"
         Write-Host "Setting Qt Path in Visual Studio"
-        &"$devenvPath" /command "Tools.Options"
-        &"$devenvPath" /command "QtVersions.AddQtVersion"
-        &"$devenvPath" /command "qtAddExistingVersion ${{ env.QT_PATH }}"
+        & "$devenvPath" /command "$qtVersionCommand"
       shell: powershell
 
     - name: Build
