@@ -10,7 +10,9 @@ env:
   PROJECT_FILE_PATH: HelloWorld.vcxproj
   BUILD_CONFIGURATION: Debug|x64 
   DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe
-
+  QT_PATH: ${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64
+  QT_VERSION: 6.6.1
+  
 permissions:
   contents: read
 
@@ -28,20 +30,26 @@ jobs:
     - name: Debug - List repository files
       run: dir /s
       shell: cmd
-    - name: Install Qt 6.6.1
+
+    - name: Install Qt Visual Studio Tools extension
       run: |
-        choco install qt --version=6.6.1 -y
+        choco install qt-vs-tools -y
       shell: cmd
 
-    - name: Add Visual Studio to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-
+    - name: Set Qt Environment Variables
+      run: |
+        echo "Setting Qt Environment Variables"
+        echo "QTDIR=${{ env.QT_PATH }}" >> $GITHUB_ENV
+        echo "QtToolsPath=${{ env.QT_PATH }}/bin" >> $GITHUB_ENV
+      shell: bash
+      
     - name: Add Qt Path to Visual Studio 2022
       run: |
         & "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -find Common7\IDE\devenv.com > vsPath.txt
         set /p VS_PATH=<vsPath.txt
         call "%VS_PATH%" -command "Tools.Options" -cmdline "Qt;Versions;Add;Version name=6.6.1;Path=${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64"
       shell: cmd
+      
     - name: Build
       shell: cmd
       run: |
