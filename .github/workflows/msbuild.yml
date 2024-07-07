@@ -54,27 +54,31 @@ jobs:
         echo "##[set-output name=vs-path;]$vsPath"
       shell: powershell
 
-    # Step 12: Find and Install VSIX Installer
-    - name: Find and Install VSIX Installer
+    # Step 12: Find VSIX Installer Path
+    - name: Find VSIX Installer Path
+      id: vsix-path
       run: |
         $vsPath = "${{ steps.vs-path.outputs.vs-path }}"
-        Write-Host "Visual Studio Path: $vsPath"
         $vsInstallerPath = Get-ChildItem -Path $vsPath -Recurse -Filter vsixinstaller.exe | Select-Object -First 1 -ExpandProperty FullName
         if (-not $vsInstallerPath) {
           throw "vsixinstaller.exe not found"
         }
-        Write-Host "VSIX Installer Path: $vsInstallerPath"
-        Write-Host "Installing the VSIX package..."
-        &"$vsInstallerPath" -quiet -a -s -q qt-vsaddin.vsix | Tee-Object -Variable vsixOutput
-        if ($LASTEXITCODE -ne 0) {
-          Write-Host "VSIX installation output:"
-          Write-Host "$vsixOutput"
-          throw "VSIX installation failed with exit code $LASTEXITCODE"
+        echo "##[set-output name=vsix-path;]$vsInstallerPath"
+      shell: powershell
+
+    # Step 13: Install VSIX Package
+    - name: Install VSIX Package
+      run: |
+        $vsInstallerPath = "${{ steps.vsix-path.outputs.vsix-path }}"
+        Write-Host "Installing the VSIX package with VSIX Installer Path: $vsInstallerPath"
+        $process = Start-Process -FilePath $vsInstallerPath -ArgumentList '-quiet', '-a', '-s', '-q', 'qt-vsaddin.vsix' -PassThru -Wait -NoNewWindow
+        if ($process.ExitCode -ne 0) {
+          throw "VSIX installation failed with exit code $($process.ExitCode)"
         }
         Write-Host "VSIX package installed successfully."
       shell: powershell
 
-    # Step 13: Set Qt Path in Visual Studio
+    # Step 14: Set Qt Path in Visual Studio
     - name: Set Qt Path in Visual Studio
       run: |
         $vsPath = "${{ steps.vs-path.outputs.vs-path }}"
