@@ -34,7 +34,7 @@ jobs:
       shell: cmd
 
 
-    # Step 10: Download Qt Visual Studio Tools Extension
+   # Step 10: Download Qt Visual Studio Tools Extension
     - name: Download Qt Visual Studio Tools Extension
       run: |
         Invoke-WebRequest -Uri "https://mirror.netcologne.de/qtproject/development_releases/vsaddin/2.8.0/qt-vsaddin-msvc2022-2.8.0.vsix" -OutFile "qt-vsaddin.vsix"
@@ -44,7 +44,7 @@ jobs:
     - name: Install Qt Visual Studio Tools Extension
       run: |
         $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
-        &"$vsPath\Common7\IDE\devenv.com" /InstallVsix qt-vsaddin.vsix
+        &"$vsPath\Common7\IDE\CommonExtensions\Microsoft\VsixInstaller\vsixinstaller.exe" -quiet -a -s -q qt-vsaddin.vsix
       shell: powershell
 
     # Step 12: Set Qt Path in Visual Studio
