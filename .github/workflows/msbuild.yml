@@ -10,6 +10,7 @@ env:
   PROJECT_FILE_PATH: HelloWorld.vcxproj
   BUILD_CONFIGURATION: Debug|x64 
   SOLUTION_FILE_PATH: HelloWorld.sln
+  DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
   QT_VERSION: 6.6.1
 
 permissions:
@@ -46,22 +47,19 @@ jobs:
 
     - name: Install Qt Visual Studio Tools Extension
       run: |
-        $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
-        $devenvPath = "$vsPath\Common7\IDE\devenv.com"
-        &"$devenvPath" /installvstemplates qt-vsaddin.vsix
+        $devenvPath = "${{ env.DEVENV_PATH }}"
+        & "$devenvPath" /installvstemplates qt-vsaddin.vsix
       shell: pwsh
 
     - name: Configure Qt in Visual Studio
       run: |
-        $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
-        $devenvPath = "$vsPath\Common7\IDE\devenv.com"
-        &"$devenvPath" /command "Tools.Options"
-        &"$devenvPath" /command "QtVersions.AddQtVersion"
-        &"$devenvPath" /command "qtAddExistingVersion ${{ env.QTDIR }}"
+        $devenvPath = "${{ env.DEVENV_PATH }}"
+        $qtPath = "${{ env.QTDIR }}"
+        & "$devenvPath" /command "QtVersions.AddQtVersion \"$qtPath\""
       shell: pwsh
 
     - name: Build with devenv.com
       run: |
         echo "Current directory: $(Get-Location)"
-        & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" ${{ env.SOLUTION_FILE_PATH }} /Build "${{ env.BUILD_CONFIGURATION }}" /Out buildLog_Debug.txt
+        & "${{ env.DEVENV_PATH }}" ${{ env.SOLUTION_FILE_PATH }} /Build "${{ env.BUILD_CONFIGURATION }}" /Out buildLog_Debug.txt
       shell: pwsh
