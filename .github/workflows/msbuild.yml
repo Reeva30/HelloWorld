@@ -39,13 +39,29 @@ jobs:
       run: |
         echo "QTDIR=${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/msvc2019_64" >> $GITHUB_ENV
         echo "QtToolsPath=${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/msvc2019_64/bin" >> $GITHUB_ENV
-        echo "Adding Qt bin to PATH"
         echo "${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/msvc2019_64/bin" >> $GITHUB_PATH
 
     - name: Print Qt version information
       run: qmake -v
 
+    - name: Install Qt Visual Studio Tools Extension
+      run: |
+        $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+        $devenvPath = "$vsPath\Common7\IDE\devenv.com"
+        &"$devenvPath" /installvstemplates qt-vsaddin.vsix
+      shell: pwsh
+
+    - name: Configure Qt in Visual Studio
+      run: |
+        $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
+        $devenvPath = "$vsPath\Common7\IDE\devenv.com"
+        &"$devenvPath" /command "Tools.Options"
+        &"$devenvPath" /command "QtVersions.AddQtVersion"
+        &"$devenvPath" /command "qtAddExistingVersion ${{ env.QTDIR }}"
+      shell: pwsh
+
     - name: Build with devenv.com
       run: |
-        echo "Current directory: $(PWD.Path)"
-        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "${{ env.SOLUTION_FILE_PATH }}" /Build "${{ env.BUILD_CONFIGURATION }}" /Out buildLog_Debug.txt
+        echo "Current directory: $(Get-Location)"
+        & "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" ${{ env.SOLUTION_FILE_PATH }} /Build "${{ env.BUILD_CONFIGURATION }}" /Out buildLog_Debug.txt
+      shell: pwsh
