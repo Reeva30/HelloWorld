@@ -9,8 +9,7 @@ on:
 env:
   PROJECT_FILE_PATH: HelloWorld.vcxproj
   BUILD_CONFIGURATION: Debug|x64 
-  DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe
-  QT_PATH: ${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64
+  SOLUTION_FILE_PATH: HelloWorld.sln
   QT_VERSION: 6.6.1
 
 permissions:
@@ -27,64 +26,26 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Debug - List repository files
-      run: dir /s
-      shell: cmd
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v3
+      with:
+        version: ${{ env.QT_VERSION }}
+        host: windows
+        target: desktop
+        arch: win64_msvc2019_64
+        dir: ${{ runner.temp }}
 
-    - name: Add Visual Studio to PATH
-      uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Debug - List repository files
-      run: dir /s
-      shell: cmd
-
-    - name: Download Qt Visual Studio Tools Extension
+    - name: Set Qt Environment Variables
       run: |
-        Invoke-WebRequest -Uri "https://mirror.netcologne.de/qtproject/development_releases/vsaddin/2.8.0/qt-vsaddin-msvc2022-2.8.0.vsix" -OutFile "qt-vsaddin.vsix"
-      shell: powershell
+        echo "QTDIR=${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/msvc2019_64" >> $GITHUB_ENV
+        echo "QtToolsPath=${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/msvc2019_64/bin" >> $GITHUB_ENV
+        echo "Adding Qt bin to PATH"
+        echo "${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/msvc2019_64/bin" >> $GITHUB_PATH
 
-    - name: Find and Print Visual Studio Path
-      id: vs-path
-      run: |
-        $vsPath = &"C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.Component.MSBuild -property installationPath
-        echo "VS_PATH=$vsPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-      shell: powershell
+    - name: Print Qt version information
+      run: qmake -v
 
-    - name: Install Qt Visual Studio Tools Extension using vsixinstaller.exe
+    - name: Build with devenv.com
       run: |
-        $vsPath = "${{ env.VS_PATH }}"
-        $vsInstallerPath = "$vsPath\Common7\IDE\CommonExtensions\Microsoft\VsixInstaller\vsixinstaller.exe"
-        Write-Host "Installing the VSIX package with VSIX Installer Path: $vsInstallerPath"
-        &"$vsInstallerPath" /quiet /logFile:vsixinstaller.log "qt-vsaddin.vsix"
-        $lastExitCode = $LASTEXITCODE
-        if ($lastExitCode -ne 0) {
-          Write-Host "VSIX installation failed with exit code $lastExitCode"
-          if (Test-Path -Path vsixinstaller.log) {
-            Write-Host "VSIX installation log:"
-            Get-Content -Path vsixinstaller.log
-          } else {
-            Write-Host "VSIX installation log file was not created."
-          }
-          throw "VSIX installation failed with exit code $lastExitCode"
-        } else {
-          Write-Host "VSIX package installed successfully."
-        }
-      shell: powershell
-
-    - name: Set Qt Path in Visual Studio via Registry
-      run: |
-        $qtPath = "${{ env.QT_PATH }}"
-        $qtVersion = "${{ env.QT_VERSION }}"
-        $qtKey = "HKCU:\Software\Microsoft\VisualStudio\17.0_Config\QtProject\QtVersions"
-        if (-not (Test-Path $qtKey)) {
-          New-Item -Path $qtKey -Force
-        }
-        Set-ItemProperty -Path $qtKey -Name "DefaultQtVersion" -Value $qtVersion
-        New-ItemProperty -Path $qtKey -Name $qtVersion -Value $qtPath -PropertyType String -Force
-        Write-Host "Qt path set to $qtPath in Visual Studio."
-      shell: powershell
-
-    - name: Build
-      shell: cmd
-      run: |
-        "%DEVENV_PATH%" "%PROJECT_FILE_PATH%" /Build "%BUILD_CONFIGURATION%" /Out buildLog_Debug.txt
+        echo "Current directory: $(PWD.Path)"
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" "${{ env.SOLUTION_FILE_PATH }}" /Build "${{ env.BUILD_CONFIGURATION }}" /Out buildLog_Debug.txt
