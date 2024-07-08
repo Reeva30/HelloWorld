@@ -14,7 +14,6 @@ env:
   QT_VERSION: 6.6.1
   QT_PATH: ${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64
 
-
 permissions:
   contents: read
 
@@ -37,7 +36,6 @@ jobs:
       run: powershell -File configure-qt.ps1
       
     - name: Build with devenv.com
+      shell: cmd
       run: |
-        echo "Current directory: $(Get-Location)"
-        & "${{ env.DEVENV_PATH }}" ${{ env.SOLUTION_FILE_PATH }} /Build "${{ env.BUILD_CONFIGURATION }}" /Out buildLog_Debug.txt
-      shell: pwsh
+        "%DEVENV_PATH%" "%PROJECT_FILE_PATH%" /Build "%BUILD_CONFIGURATION%" /Out buildLog_Debug.txt
