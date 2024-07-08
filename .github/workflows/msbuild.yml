@@ -27,36 +27,28 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v3
-      with:
-        version: ${{ env.QT_VERSION }}
-        host: windows
-        target: desktop
-        arch: win64_msvc2019_64
-        dir: ${{ runner.temp }}
-
-    - name: Set Qt Environment Variables
-      run: |
-        echo "QTDIR=${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/msvc2019_64" >> $GITHUB_ENV
-        echo "QtToolsPath=${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/msvc2019_64/bin" >> $GITHUB_ENV
-        echo "${{ runner.temp }}/Qt/${{ env.QT_VERSION }}/msvc2019_64/bin" >> $GITHUB_PATH
-
-    - name: Print Qt version information
-      run: qmake -v
-
     - name: Install Qt Visual Studio Tools Extension
       run: |
-        $devenvPath = "${{ env.DEVENV_PATH }}"
-        & "$devenvPath" /installvstemplates qt-vsaddin.vsix
-      shell: pwsh
+        powershell -Command "& {Start-Process 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\Extensions\Microsoft\VsixInstaller.exe' -ArgumentList '/quiet', '/a', '/logFile=install_log.txt', 'https://marketplace.visualstudio.com/_apis/public/gallery/publishers/qtproject/vsextensions/vs-tools/2.4.2/vspackage'}"
 
-    - name: Configure Qt in Visual Studio
+    - name: Configure Qt Version
       run: |
-        $devenvPath = "${{ env.DEVENV_PATH }}"
-        $qtPath = "${{ env.QTDIR }}"
-        & "$devenvPath" /command "QtVersions.AddQtVersion \"$qtPath\""
-      shell: pwsh
+        $qtVersionName = "6.6.1"
+        $qtPath = "${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64"
+        $configFilePath = [System.IO.Path]::Combine($env:APPDATA, "QtProject", "qtversion.xml")
+
+        if (-Not (Test-Path $configFilePath)) {
+          New-Item -ItemType File -Path $configFilePath
+        }
+
+        $xmlContent = [xml](Get-Content $configFilePath)
+        $root = $xmlContent.CreateElement("QtConfiguration")
+        $version = $xmlContent.CreateElement("QtVersion")
+        $version.SetAttribute("Id", $qtVersionName)
+        $version.SetAttribute("Path", $qtPath)
+        $root.AppendChild($version)
+        $xmlContent.AppendChild($root)
+        $xmlContent.Save($configFilePath)
 
     - name: Build with devenv.com
       run: |
