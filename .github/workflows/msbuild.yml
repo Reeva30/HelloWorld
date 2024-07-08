@@ -29,41 +29,12 @@ jobs:
 
     - name: Install Qt Visual Studio Tools Extension
       run: |
-        powershell -Command "& {Start-Process 'C:\Program Files (x86)\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\Extensions\Microsoft\VsixInstaller.exe' -ArgumentList '/quiet', '/a', '/logFile=install_log.txt', 'https://marketplace.visualstudio.com/_apis/public/gallery/publishers/qtproject/vsextensions/vs-tools/2.4.2/vspackage'}"
+        powershell -Command "& {Start-Process -Wait 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe' -ArgumentList 'modify', '--installPath', 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise', '--add', 'Component.ID', '--quiet'}"
 
     - name: Configure Qt Version
       run: |
-        $qtVersionName = "6.6.1"
-        $qtPath = "${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64"
-        $configDirPath = [System.IO.Path]::Combine($env:APPDATA, "QtProject")
-        $configFilePath = [System.IO.Path]::Combine($configDirPath, "qtversion.xml")
-
-        if (-Not (Test-Path $configDirPath)) {
-          New-Item -ItemType Directory -Path $configDirPath | Out-Null
-        }
-
-        if (-Not (Test-Path $configFilePath)) {
-          $xmlContent = [xml]@"
-          <QtConfiguration>
-          <QtVersions>
-          <QtVersion Id="$qtVersionName" Path="$qtPath"/>  
-          </QtVersions>
-          </QtConfiguration>
-          "@
-          $xmlContent.Save($configFilePath)
-        } else {
-          $xmlContent = [xml](Get-Content $configFilePath)
-          $qtVersionsNode = $xmlContent.SelectSingleNode("//QtVersions")
-          if (-Not $qtVersionsNode) {
-            $qtVersionsNode = $xmlContent.CreateElement("QtVersions")
-            $xmlContent.QtConfiguration.AppendChild($qtVersionsNode)
-          }
-          $newQtVersionNode = $xmlContent.CreateElement("QtVersion")
-          $newQtVersionNode.SetAttribute("Id", $qtVersionName)
-          $newQtVersionNode.SetAttribute("Path", $qtPath)
-          $qtVersionsNode.AppendChild($newQtVersionNode)
-          $xmlContent.Save($configFilePath)
-        }
+        &"${{ env.DEVENV_PATH }}" -Command "Qt5VSAddin.QtVersionManager.AddQtVersion('$QT_PATH', '6.6.1')"
+        &"${{ env.DEVENV_PATH }}" -Command "Qt5VSAddin.QtVersionManager.SetDefaultQtVersion('6.6.1')"
 
     - name: Build with devenv.com
       run: |
