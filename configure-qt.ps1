@@ -1,5 +1,5 @@
 $qtVersionName = "6.6.1"
-$qtPath = "${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64"
+$qtPath = "$env:GITHUB_WORKSPACE\ThirdParty\Qt\6.6.1\msvc2019_64"
 $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
 
 Write-Output "Adding Qt version $qtVersionName at path $qtPath using $devenvPath"
