@@ -30,7 +30,7 @@ jobs:
       uses: microsoft/setup-msbuild@v1.0.2
 
 
-    # Step: Download and install Qt VS add-in
+# Step: Download and install Qt VS add-in
     - name: Download Qt VS add-in
       run: curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
       shell: cmd
@@ -39,10 +39,14 @@ jobs:
       run: |
         set "VSIX_INSTALLER="
         for /R "C:\Program Files (x86)\Microsoft Visual Studio" %%F in (vsixinstaller.exe) do (
-          set "VSIX_INSTALLER=%%F"
+          if "%%F" == "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vsixinstaller.exe" (
+            set "VSIX_INSTALLER=%%F"
+            goto :found
+          )
         )
+        :found
         if defined VSIX_INSTALLER (
-          "%VSIX_INSTALLER%" /q qt-vsaddin-msvc2022-3.0.2.vsix
+          "%VSIX_INSTALLER%" /quiet qt-vsaddin-msvc2022-3.0.2.vsix
         ) else (
           echo "VSIX Installer not found"
           exit /b 1
