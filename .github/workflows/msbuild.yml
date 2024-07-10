@@ -12,6 +12,7 @@ env:
   SOLUTION_FILE_PATH: HelloWorld.sln
   DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
   QT_VERSION: 6.6.1
+  DEVENV_PATH2: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
   QT_PATH: ${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64
 
 permissions:
@@ -28,12 +29,19 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Install Qt Visual Studio Tools Extension
+    # Step: Download and install Qt VS add-in
+    - name: Download Qt VS add-in
       run: |
-        powershell -Command "& {Start-Process -Wait 'C:\Program Files (x86)\Microsoft Visual Studio\Installer\vs_installer.exe' -ArgumentList 'modify', '--installPath', 'C:\Program Files\Microsoft Visual Studio\2022\Enterprise', '--add', 'Component.ID', '--quiet'}"
-  
-    - name: Configure Qt Version
-      run: powershell -File configure-qt.ps1
+        curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
+        start /wait msiexec /i qt-vsaddin-msvc2022-3.0.2.vsix /quiet
+      shell: cmd
+
+    # Step: Set Qt version in Visual Studio
+    - name: Set Qt version in Visual Studio
+      run: |
+        "%DEVENV_PATH2%" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=%QT_PATH%"
+      shell: cmd
+
       
     - name: Build with devenv.com
       shell: cmd
