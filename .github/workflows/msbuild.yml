@@ -29,14 +29,24 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-   # Step: Download and install Qt VS add-in
+
+    # Step: Download and install Qt VS add-in
     - name: Download Qt VS add-in
       run: curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
       shell: cmd
 
     - name: Install Qt VS add-in
       run: |
-        "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vsixinstaller.exe" /q qt-vsaddin-msvc2022-3.0.2.vsix
+        set "VSIX_INSTALLER="
+        for /R "C:\Program Files (x86)\Microsoft Visual Studio" %%F in (vsixinstaller.exe) do (
+          set "VSIX_INSTALLER=%%F"
+        )
+        if defined VSIX_INSTALLER (
+          "%VSIX_INSTALLER%" /q qt-vsaddin-msvc2022-3.0.2.vsix
+        ) else (
+          echo "VSIX Installer not found"
+          exit /b 1
+        )
       shell: cmd
 
     # Step: Set Qt version in Visual Studio
