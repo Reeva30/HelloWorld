@@ -30,6 +30,11 @@ jobs:
         curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
       shell: cmd
 
+    - name: Print Visual Studio IDE Directory
+      run: |
+        dir "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE"
+      shell: cmd
+      
     - name: Install Qt VS add-in
       run: |
         $vsixInstallerPath = (Get-ChildItem -Recurse -Filter vsixinstaller.exe -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match "Microsoft Visual Studio" }).FullName
