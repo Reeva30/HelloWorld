@@ -1,4 +1,4 @@
-name: Add Qt VS Add-in to Visual Studio 2022
+name: Add Qt VS Add-in to Visual Studio 2022 and Configure Qt Version
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - main
 
 jobs:
-  addin-install:
+  setup-qt:
     runs-on: windows-latest
 
     steps:
@@ -54,8 +54,31 @@ jobs:
     - name: Install Qt VS Add-in
       run: |
         $vsixInstallerPath = $env:VSIX_INSTALLER_PATH
-        Start-Process -FilePath $vsixInstallerPath -ArgumentList "/q", "qt-vsaddin-msvc2022-3.0.2.vsix" -NoNewWindow -RedirectStandardOutput "stdout.log" -RedirectStandardError "stderr.log" -Wait
-        Write-Host "Standard Output:"
-        Get-Content -Path "stdout.log" | Write-Host
-        Write-Host "Standard Error:"
-        Get-Content -Path "stderr.log" | Write-Host
+        Start-Process -FilePath $vsixInstallerPath -ArgumentList "/q", "qt-vsaddin-msvc2022-3.0.2.vsix" -NoNewWindow -Wait
+
+    - name: Configure Qt Version
+      run: |
+        $qtVersionName = "6.6.1"
+        $qtPath = "X:\OpenTwin\Repo\Third_Party_Libraries\Qt\6.6.1\msvc2019_64"
+        
+        # Path to the Qt settings file used by the add-in (example path)
+        $qtSettingsPath = "$env:APPDATA\QtProject\qtcreator\qtversion.xml"
+        
+        # Check if the settings file exists
+        if (Test-Path $qtSettingsPath) {
+            [xml]$qtConfig = Get-Content $qtSettingsPath
+            
+            # Create a new qtversion element
+            $newVersion = $qtConfig.CreateElement("qtversion")
+            $newVersion.SetAttribute("Id", "qt." + $qtVersionName)
+            $newVersion.SetAttribute("Name", $qtVersionName)
+            $newVersion.SetAttribute("QMakePath", Join-Path $qtPath "bin\qmake.exe")
+        
+            # Append the new version to the qtversions node
+            $qtConfig.qtcreator.qtversions.AppendChild($newVersion) | Out-Null
+            $qtConfig.Save($qtSettingsPath)
+        
+            Write-Host "Configured Qt version $qtVersionName with path $qtPath"
+        } else {
+            Write-Error "Qt settings file not found at $qtSettingsPath"
+        }
