@@ -30,7 +30,14 @@ jobs:
       run: |
         $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe"
         $vsixInstallerArguments = '/quiet', '/logFile:vsixinstall.log', 'qt-vsaddin-msvc2022-3.0.2.vsix'
-        Start-Process -FilePath $vsixPath -ArgumentList $vsixInstallerArguments -NoNewWindow -Wait
+        Write-Output "Installing Qt VS add-in..."
+        Start-Process -FilePath $vsixPath -ArgumentList $vsixInstallerArguments -NoNewWindow -Wait -PassThru
+        $exitCode = $?
+        Write-Output "VSIX Installer exited with code $exitCode"
+        if ($exitCode -ne 0) {
+          Write-Error "VSIX Installer failed. Check the log file for details."
+          exit $exitCode
+        }
       shell: pwsh
 
     - name: Add Qt version in Visual Studio
