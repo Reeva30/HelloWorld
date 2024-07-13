@@ -31,8 +31,9 @@ jobs:
         $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe"
         $vsixInstallerArguments = '/quiet', '/logFile:vsixinstall.log', 'qt-vsaddin-msvc2022-3.0.2.vsix'
         Write-Output "Installing Qt VS add-in..."
-        Start-Process -FilePath $vsixPath -ArgumentList $vsixInstallerArguments -NoNewWindow -Wait -PassThru
-        $exitCode = $?
+        $process = Start-Process -FilePath $vsixPath -ArgumentList $vsixInstallerArguments -NoNewWindow -Wait -PassThru
+        $process | Format-Table -Property Id, ProcessName, CPU, StartTime, Path -AutoSize
+        $exitCode = $process.ExitCode
         Write-Output "VSIX Installer exited with code $exitCode"
         if ($exitCode -ne 0) {
           Write-Error "VSIX Installer failed. Check the log file for details."
@@ -57,7 +58,7 @@ jobs:
       shell: pwsh
 
     - name: Upload VSIX Installer Log
-      if: failure()
+      if: always()
       uses: actions/upload-artifact@v2
       with:
         name: vsixinstall-log
