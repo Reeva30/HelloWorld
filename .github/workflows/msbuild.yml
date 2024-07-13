@@ -9,7 +9,7 @@ on:
 env:
   QT_VERSION: 6.6.1
   DEVENV_PATH2: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
-  QT_PATH: ${{ github.workspace }}\Qt\6.6.1\msvc2019_64
+  QT_PATH: ${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64
 
 permissions:
   contents: read
@@ -22,6 +22,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+ # Step 2: Check out the third-party repository
+    - name: Check out the third-party repository
+      uses: actions/checkout@v2
+      with:
+        repository: OT-OpenTwin/ThirdParty
+        path: ThirdParty
+        fetch-depth: 1  # Limit fetching to the last commit
+        
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
       
@@ -62,6 +70,8 @@ jobs:
     - name: Set Qt version in Visual Studio
       run: |
         $devenvPath = "${{ env.DEVENV_PATH2 }}"
+        dir %QT_PATH%
+
         $qtPath = "${{ env.QT_PATH }}"
         Start-Process -FilePath $devenvPath -ArgumentList "/command Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath" -NoNewWindow -Wait -PassThru -RedirectStandardOutput qt_version_log.txt -RedirectStandardError qt_version_error.txt
         Get-Content -Path qt_version_log.txt | Write-Output
