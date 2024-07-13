@@ -35,8 +35,8 @@ jobs:
         Start-Process -FilePath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe" -ArgumentList "qt-vsaddin-msvc2022-3.0.2.vsix /quiet /norestart" -Verb RunAs
       shell: powershell
 
-    # Step 3: Set Qt version and path in Visual Studio 2022
+# Step 3: Set Qt version and path in Visual Studio 2022
     - name: Set Qt version in Visual Studio
       run: |
-        & "${{ env.DEVENV_PATH2 }}" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=${{ env.QT_VERSION }}&Path=${{ env.QT_PATH }}"
-      shell: powershell
+        call "%DEVENV_PATH2%" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=%QT_VERSION%&Path=%QT_PATH%"
+      shell: cmd
