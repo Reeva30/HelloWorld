@@ -34,13 +34,23 @@ jobs:
         Start-Process "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe" -ArgumentList "/quiet", "qt-vsaddin-msvc2022-3.0.2.vsix" -Wait -PassThru
       shell: pwsh
 
-    - name: Set Qt version in Visual Studio
+    - name: Create batch script to set Qt version
       run: |
-        $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
-        $qtPath = "${{ github.workspace }}\Qt\6.6.1\msvc2019_64"
-        $command = "`"$devenvPath`" /command `"Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath`""
-        Write-Output "Running command: $command"
-        & "$devenvPath" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath" 2>&1 | Tee-Object -FilePath qt_version_log.txt
+        echo @echo off > set_qt_version.bat
+        echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=%QT_PATH%" >> set_qt_version.bat
+        echo if %%errorlevel%% neq 0 exit /b %%errorlevel%% >> set_qt_version.bat
+        echo exit 0 >> set_qt_version.bat
+
+    - name: Run batch script to set Qt version with detailed logging
+      run: |
+        cmd /c set_qt_version.bat > qt_version_log.txt 2> qt_version_error.txt
+        type qt_version_log.txt
+        type qt_version_error.txt
+
+    - name: Print output and error logs for Qt version setting
+      run: |
         Write-Output "Qt version log:"
         Get-Content -Path qt_version_log.txt
+        Write-Output "Qt version error log:"
+        Get-Content -Path qt_version_error.txt
       shell: pwsh
