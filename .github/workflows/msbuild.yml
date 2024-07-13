@@ -16,14 +16,6 @@ jobs:
         with:
           vs-version: '17.0' # Visual Studio 2022
 
-      - name: Install Visual Studio 2022 C++ Desktop workload
-        shell: powershell
-        run: |
-          echo "Installing Visual Studio 2022 C++ Desktop workload..."
-          $ErrorActionPreference = 'Stop'
-          Invoke-WebRequest 'https://aka.ms/vs/17/release/vs_buildtools.exe' -OutFile 'vs_buildtools.exe'
-          Start-Process 'vs_buildtools.exe' -ArgumentList '--quiet', '--wait', '--norestart', '--nocache', '--add', 'Microsoft.VisualStudio.Workload.NativeDesktop' -NoNewWindow -Wait
-
       - name: Download Qt VS Add-in (version 3.0.2)
         run: |
           echo "Downloading Qt VS Add-in..."
@@ -37,7 +29,7 @@ jobs:
           if (-not $vsixInstallerPath) {
             throw "vsixinstaller.exe not found in PATH."
           }
-          Start-Process -FilePath $vsixInstallerPath -ArgumentList '/quiet', '/install', 'qt-vsaddin-msvc2022-3.0.2.vsix' -NoNewWindow -Wait
+          Start-Process -FilePath $vsixInstallerPath -ArgumentList 'qt-vsaddin-msvc2022-3.0.2.vsix', '/quiet', '/norestart' -NoNewWindow -Wait
 
       - name: Verify Installation
         shell: powershell
