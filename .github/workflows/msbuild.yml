@@ -2,9 +2,9 @@ name: MSBuild
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "Demo" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "Demo" ]
 
 env:
   QT_VERSION: 6.6.1
@@ -29,42 +29,18 @@ jobs:
         curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
       shell: cmd
 
-    - name: Print Visual Studio IDE Directory
+    - name: Install Qt VS add-in
       run: |
-        dir "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE"
-      shell: cmd
-
-    - name: Create Scheduled Task to Install Qt VS add-in
-      run: |
-        $action = New-ScheduledTaskAction -Execute "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe" -Argument "/quiet qt-vsaddin-msvc2022-3.0.2.vsix"
-        $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(15)
-        $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
-        $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal
-        Register-ScheduledTask -TaskName "InstallQtVSAddin" -InputObject $task
+        Start-Process "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe" -ArgumentList "/quiet", "qt-vsaddin-msvc2022-3.0.2.vsix" -Wait -PassThru
       shell: pwsh
 
-    - name: Wait for Scheduled Task
+    - name: Set Qt version in Visual Studio
       run: |
-        Start-Sleep -Seconds 60
+        $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
+        $qtPath = "${{ github.workspace }}\Qt\6.6.1\msvc2019_64"
+        $command = "`"$devenvPath`" /command `"Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath`""
+        Write-Output "Running command: $command"
+        & "$devenvPath" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath" 2>&1 | Tee-Object -FilePath qt_version_log.txt
+        Write-Output "Qt version log:"
+        Get-Content -Path qt_version_log.txt
       shell: pwsh
-
-    - name: Check Scheduled Task Status
-      run: |
-        $task = Get-ScheduledTask -TaskName "InstallQtVSAddin"
-        $taskState = $task.State
-        if ($taskState -ne 'Ready') {
-          Get-ScheduledTaskInfo -TaskName "InstallQtVSAddin" | Select-Object -Property *
-          Write-Error "Scheduled task did not complete successfully."
-          exit 1
-        }
-      shell: pwsh
-
-    - name: Create batch script to set Qt version
-      run: |
-        echo @echo off > set_qt_version.bat
-        echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=%QT_PATH%" >> set_qt_version.bat
-        echo if %%errorlevel%% neq 0 exit /b %%errorlevel%% >> set_qt_version.bat
-
-    - name: Run batch script to set Qt version
-      run: |
-        cmd /c set_qt_version.bat
