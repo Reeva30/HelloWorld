@@ -54,5 +54,6 @@ jobs:
     - name: Install Qt VS Add-in
       run: |
         $vsixInstallerPath = $env:VSIX_INSTALLER_PATH
-        Start-Process $vsixInstallerPath -ArgumentList "/q", "qt-vsaddin-msvc2022-3.0.2.vsix" -NoNewWindow -RedirectStandardOutput install.log -RedirectStandardError install.log -Wait
-        Get-Content install.log | ForEach-Object { Write-Output $_ }
+        Start-Process $vsixInstallerPath -ArgumentList "/q", "qt-vsaddin-msvc2022-3.0.2.vsix" -NoNewWindow -RedirectStandardOutput "stdout.log" -RedirectStandardError "stderr.log" -Wait
+        Get-Content stdout.log | ForEach-Object { Write-Output $_ }
+        Get-Content stderr.log | ForEach-Object { Write-Output $_ }
