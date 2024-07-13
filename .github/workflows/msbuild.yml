@@ -61,9 +61,10 @@ jobs:
 
     - name: Set Qt version in Visual Studio
       run: |
-        Start-Process -FilePath "%DEVENV_PATH2%" -ArgumentList "/command", "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=%QT_PATH%" -NoNewWindow -Wait -PassThru -RedirectStandardOutput qt_version_log.txt -RedirectStandardError qt_version_error.txt
+        $devenvPath = "${{ env.DEVENV_PATH2 }}"
+        $qtPath = "${{ env.QT_PATH }}"
+        Start-Process -FilePath $devenvPath -ArgumentList "/command Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath" -NoNewWindow -Wait -PassThru -RedirectStandardOutput qt_version_log.txt -RedirectStandardError qt_version_error.txt
         Get-Content -Path qt_version_log.txt | Write-Output
         Get-Content -Path qt_version_error.txt | Write-Output
-      shell: pwsh
-
+      shell: pwsh  
   
