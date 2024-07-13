@@ -21,6 +21,18 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Install Visual Studio components
+      uses: microsoft/setup-visualstudio@v1
+      with:
+        components: |
+          Microsoft.VisualStudio.Component.VC.Tools.x86.x64
+          Microsoft.VisualStudio.Component.Windows10SDK.19041
+          Microsoft.VisualStudio.Component.VC.CMake.Project
+          Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core
+          Microsoft.VisualStudio.ComponentGroup.NativeDesktop.WinXP
+          Microsoft.VisualStudio.Component.VC.ATLMFC
+          Microsoft.VisualStudio.Component.VC.14.29.16.10.x86.x64
+
     - name: Download Qt VS add-in
       run: |
         curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
@@ -28,9 +40,27 @@ jobs:
 
     - name: Install Qt VS add-in
       run: |
-        runas /user:Administrator "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe /quiet /logFile:vsixinstall.log qt-vsaddin-msvc2022-3.0.2.vsix"
-      shell: cmd
-      
+        $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe"
+        $vsixInstallerArguments = '/quiet', '/logFile:vsixinstall.log', 'qt-vsaddin-msvc2022-3.0.2.vsix'
+        Start-Process -FilePath $vsixPath -ArgumentList $vsixInstallerArguments -NoNewWindow -Wait
+      shell: pwsh
+
+    - name: Add Qt version in Visual Studio
+      run: |
+        $env:QT_VERSION = "6.6.1"
+        $env:QT_PATH = "${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64"
+        $env:DEVENV_PATH2 = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
+        & $env:DEVENV_PATH2 /command "Qt5.QtOptions.QtVersions.AddVersion?Name=Qt-$env:QT_VERSION-msvc2019_64&Path=$env:QT_PATH"
+      shell: pwsh
+
+    - name: Set Qt version in Visual Studio
+      run: |
+        $env:QT_VERSION = "6.6.1"
+        $env:QT_PATH = "${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64"
+        $env:DEVENV_PATH2 = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
+        & $env:DEVENV_PATH2 /command "Qt5.QtOptions.QtDefaultVersion?Name=Qt-$env:QT_VERSION-msvc2019_64"
+      shell: pwsh
+
     - name: Upload VSIX Installer Log
       if: failure()
       uses: actions/upload-artifact@v2
