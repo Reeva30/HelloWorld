@@ -1,4 +1,4 @@
-name: CI
+name: Build Qt Visual Studio Tools
 
 on: [push, pull_request]
 
@@ -6,6 +6,7 @@ env:
   QT_VERSION: 6.6.1
   DEVENV_PATH2: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
   QT_PATH: ${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64
+  QTBUILD_STATIC_VS2022: ${{ github.workspace }}\\Qt\\6.6.1\\msvc2022_64
 
 permissions:
   contents: read
@@ -18,41 +19,40 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+    - name: Install Git
+      run: choco install git -y
+      shell: powershell
+
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Download Qt VS add-in
+    - name: Set up Qt
       run: |
-        curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
-      shell: cmd
+        mkdir $env:GITHUB_WORKSPACE\\Qt
+        curl -L -o qt.7z http://download.qt.io/official_releases/qt/6.6/6.6.1/qt-opensource-windows-x86-6.6.1.7z
+        7z x qt.7z -o$env:GITHUB_WORKSPACE\\Qt
+      shell: powershell
 
-    - name: Install Qt VS add-in
+    - name: Clone vstools repository
+      run: git clone https://code.qt.io/qt-labs/vstools.git
+      shell: bash
+
+    - name: Set environment variables
       run: |
-        $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe"
-        $vsixInstallerArguments = '/quiet', '/logFile:vsixinstall.log', 'qt-vsaddin-msvc2022-3.0.2.vsix'
-        Write-Output "Installing Qt VS add-in..."
-        
-        # Start the process and wait for it with a timeout
-        $process = Start-Process -FilePath $vsixPath -ArgumentList $vsixInstallerArguments -NoNewWindow -PassThru
-        
-        # Wait for the process to exit with a timeout (e.g., 120 seconds)
-        $timeout = 120
-        $process.WaitForExit($timeout * 1000)
+        echo "QTBUILD_STATIC_VS2022=$env:GITHUB_WORKSPACE\\Qt\\6.6.1\\msvc2022_64" >> $env:GITHUB_ENV
+      shell: bash
 
-        # Check if the process is still running
-        if (!$process.HasExited) {
-          Write-Output "VSIX Installer is still running after $timeout seconds, terminating..."
-          $process.Kill()
-          Write-Error "VSIX Installer process was killed due to timeout."
-        } else {
-          $exitCode = $process.ExitCode
-          Write-Output "VSIX Installer exited with code $exitCode"
-          if ($exitCode -ne 0) {
-            Write-Error "VSIX Installer failed. Check the log file for details."
-            exit $exitCode
-          }
-        }
-      shell: pwsh
+    - name: Initialize vstools solution
+      run: |
+        cd vstools
+        .\vstools.bat -init -startvs
+      shell: powershell
+
+    - name: Build vstools solution
+      run: |
+        cd vstools
+        msbuild /p:Configuration=Release
+      shell: powershell
 
     - name: Add Qt version in Visual Studio
       run: |
@@ -69,10 +69,3 @@ jobs:
         $env:DEVENV_PATH2 = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
         & $env:DEVENV_PATH2 /command "Qt5.QtOptions.QtDefaultVersion?Name=Qt-$env:QT_VERSION-msvc2019_64"
       shell: pwsh
-
-    - name: Upload VSIX Installer Log
-      if: always()
-      uses: actions/upload-artifact@v2
-      with:
-        name: vsixinstall-log
-        path: vsixinstall.log
