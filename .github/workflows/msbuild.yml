@@ -24,44 +24,19 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
- # Step 1: Download the Qt VS add-in
-    - name: Download Qt VS add-in
-      run: |
-        curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
 
-    # Step 2: Install the Qt VS add-in with elevated permissions
-    - name: Install Qt VS add-in
-      run: |
-        Start-Process -FilePath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe" -ArgumentList "qt-vsaddin-msvc2022-3.0.2.vsix /quiet /norestart" -Verb RunAs
-      shell: powershell
+    - name: Download Qt VSIX
+      run: curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
 
-    # Step 3: Create a PowerShell script to set Qt version in Visual Studio 2022
-    - name: Create PowerShell script for setting Qt version
+    - name: Install Qt VSIX
       run: |
-        echo '$qtVersion = "6.6.1"' > set_qt_version.ps1
-        echo '$qtPath = "${{ env.QT_PATH }}"' >> set_qt_version.ps1
-        echo '$devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"' >> set_qt_version.ps1
-        echo 'Write-Output "Setting Qt version..."' >> set_qt_version.ps1
-        echo 'Start-Process -FilePath $devenvPath -ArgumentList "/command `"Qt5.QtOptions.QtVersions.AddVersion?Name=$qtVersion&Path=$qtPath`"" -Wait -NoNewWindow -RedirectStandardOutput output.log -RedirectStandardError error.log' >> set_qt_version.ps1
-        echo 'Write-Output "Qt version set successfully."' >> set_qt_version.ps1
-        echo 'exit' >> set_qt_version.ps1
+        Start-Process -Wait -FilePath "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe" -ArgumentList "qt-vsaddin-msvc2022-3.0.2.vsix"
 
-  # Step 4: Run the PowerShell script with elevated permissions
-    - name: Run PowerShell script with elevated permissions
+    - name: Install Qt
       run: |
-        Start-Process -FilePath "powershell.exe" -ArgumentList "-File `"%cd%\set_qt_version.ps1`"" -Verb RunAs -Wait
-      shell: powershell
+        choco install qt --version=%QT_VERSION% -y
 
-    # Step 5: Upload logs for inspection
-    - name: Upload logs
-      if: always()
-      uses: actions/upload-artifact@v2
-      with:
-        name: qt-version-setting-logs
-        path: output.log
-
-    # Step 6: Validate Qt version configuration
-    - name: Validate Qt version configuration
+    - name: Setup Qt Environment
       run: |
-        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" /command "Qt5.QtOptions.QtVersions"
-      shell: cmd
+        echo "QT_PATH=${{ env.QT_PATH }}" >> $GITHUB_ENV
+        echo "${{ env.QT_PATH }}\bin" >> $GITHUB_PATH
