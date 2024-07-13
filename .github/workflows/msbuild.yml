@@ -37,10 +37,16 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Download and Install Qt VS add-in
+      run: |
+        curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe" /quiet /logFile:vsixinstall.log qt-vsaddin-msvc2022-3.0.2.vsix
+      shell: cmd
+
     - name: Download Qt
       run: |
         mkdir $env:GITHUB_WORKSPACE\\Qt
-        Invoke-WebRequest -Uri http://download.qt.io/official_releases/qt/6.6/6.6.1/qt-opensource-windows-x86-6.6.1.7z -OutFile $env:GITHUB_WORKSPACE\\qt.7z
+        Invoke-WebRequest -Uri https://download.qt.io/archive/qt/6.6/6.6.1/qt-opensource-windows-x86-6.6.1.7z -OutFile $env:GITHUB_WORKSPACE\\qt.7z
         7z x $env:GITHUB_WORKSPACE\\qt.7z -o$env:GITHUB_WORKSPACE\\Qt
       shell: powershell
 
@@ -51,22 +57,15 @@ jobs:
 
     - name: Build with devenv.com
       run: |
-        $env:DEVENV_PATH = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
-        & $env:DEVENV_PATH build\\YOUR_SOLUTION.sln /Build Release
-      shell: powershell
+        "%DEVENV_PATH%" build\\HelloWorld.sln /Build "%BUILD_CONFIGURATION%" /Out buildLog_Debug.txt
+      shell: cmd
 
     - name: Add Qt version in Visual Studio
       run: |
-        $env:QT_VERSION = "6.6.1"
-        $env:QT_PATH = "${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64"
-        $env:DEVENV_PATH2 = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
-        & $env:DEVENV_PATH2 /command "Qt5.QtOptions.QtVersions.AddVersion?Name=Qt-$env:QT_VERSION-msvc2019_64&Path=$env:QT_PATH"
-      shell: pwsh
+        "%DEVENV_PATH%" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=Qt-%QT_VERSION-msvc2019_64&Path=%QT_PATH%"
+      shell: cmd
 
     - name: Set Qt version in Visual Studio
       run: |
-        $env:QT_VERSION = "6.6.1"
-        $env:QT_PATH = "${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64"
-        $env:DEVENV_PATH2 = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
-        & $env:DEVENV_PATH2 /command "Qt5.QtOptions.QtDefaultVersion?Name=Qt-$env:QT_VERSION-msvc2019_64"
-      shell: pwsh
+        "%DEVENV_PATH%" /command "Qt5.QtOptions.QtDefaultVersion?Name=Qt-%QT_VERSION-msvc2019_64"
+      shell: cmd
