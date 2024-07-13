@@ -6,7 +6,6 @@ env:
   QT_VERSION: 6.6.1
   DEVENV_PATH2: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
   QT_PATH: ${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64
-  QTBUILD_STATIC_VS2022: ${{ github.workspace }}\\Qt\\6.6.1\\msvc2022_64
 
 permissions:
   contents: read
@@ -25,6 +24,39 @@ jobs:
 
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Download Qt VS Add-in
+      run: |
+        Invoke-WebRequest -Uri https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix -OutFile qt-vsaddin-msvc2022-3.0.2.vsix
+      shell: powershell
+
+    - name: Install Qt VS Add-in
+      run: |
+        $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe"
+        $vsixInstallerArguments = '/quiet', '/logFile:vsixinstall.log', 'qt-vsaddin-msvc2022-3.0.2.vsix'
+        Write-Output "Installing Qt VS add-in..."
+        
+        # Start the process and wait for it with a timeout
+        $process = Start-Process -FilePath $vsixPath -ArgumentList $vsixInstallerArguments -NoNewWindow -PassThru
+        
+        # Wait for the process to exit with a timeout (e.g., 120 seconds)
+        $timeout = 120
+        $process.WaitForExit($timeout * 1000)
+
+        # Check if the process is still running
+        if (!$process.HasExited) {
+          Write-Output "VSIX Installer is still running after $timeout seconds, terminating..."
+          $process.Kill()
+          Write-Error "VSIX Installer process was killed due to timeout."
+        } else {
+          $exitCode = $process.ExitCode
+          Write-Output "VSIX Installer exited with code $exitCode"
+          if ($exitCode -ne 0) {
+            Write-Error "VSIX Installer failed. Check the log file for details."
+            exit $exitCode
+          }
+        }
+      shell: pwsh
 
     - name: Set up Qt
       run: |
@@ -69,3 +101,10 @@ jobs:
         $env:DEVENV_PATH2 = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
         & $env:DEVENV_PATH2 /command "Qt5.QtOptions.QtDefaultVersion?Name=Qt-$env:QT_VERSION-msvc2019_64"
       shell: pwsh
+
+    - name: Upload VSIX Installer Log
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: vsixinstall-log
+        path: vsixinstall.log
