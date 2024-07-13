@@ -29,28 +29,24 @@ jobs:
       run: |
         curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
 
-    # Step 2: Install the Qt VS add-in with elevated permissions
+  # Step 2: Install the Qt VS add-in with elevated permissions
     - name: Install Qt VS add-in
       run: |
         Start-Process -FilePath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe" -ArgumentList "qt-vsaddin-msvc2022-3.0.2.vsix /quiet /norestart" -Verb RunAs
       shell: powershell
 
-    # Step 3: Create a batch file to set Qt version in Visual Studio 2022
-    - name: Create batch file for setting Qt version
+    # Step 3: Create a PowerShell script to set Qt version in Visual Studio 2022
+    - name: Create PowerShell script for setting Qt version
       run: |
-        echo @echo off > set_qt_version.bat
-        echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=${{ env.QT_PATH }}" >> set_qt_version.bat
-        echo exit >> set_qt_version.bat
+        echo $qtVersion = "6.6.1" > set_qt_version.ps1
+        echo $qtPath = "${{ env.QT_PATH }}" >> set_qt_version.ps1
+        echo $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" >> set_qt_version.ps1
+        echo Start-Process -FilePath $devenvPath -ArgumentList "/command `"Qt5.QtOptions.QtVersions.AddVersion?Name=$qtVersion&Path=$qtPath`"" -Wait -NoNewWindow >> set_qt_version.ps1
 
-    # Step 4: Create and run scheduled task with delay
-    - name: Create and run scheduled task
+    # Step 4: Run the PowerShell script with elevated permissions
+    - name: Run PowerShell script with elevated permissions
       run: |
-        $now = (Get-Date).AddMinutes(1).ToString("HH:mm")
-        schtasks /create /tn "SetQtVersion" /tr "%cd%\set_qt_version.bat" /sc once /rl highest /st $now
-        Start-Sleep -Seconds 70
-        schtasks /run /tn "SetQtVersion"
-        Start-Sleep -Seconds 10
-        schtasks /delete /tn "SetQtVersion" /f
+        Start-Process -FilePath "powershell.exe" -ArgumentList "-File `"%cd%\set_qt_version.ps1`"" -Verb RunAs -Wait
       shell: powershell
 
     # Step 5: Validate Qt version configuration
