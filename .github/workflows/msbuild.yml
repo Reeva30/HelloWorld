@@ -34,17 +34,11 @@ jobs:
       run: |
         dir "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE"
       shell: cmd
-      
+
     - name: Install Qt VS add-in
       run: |
-        $vsixInstallerPath = (Get-ChildItem -Recurse -Filter vsixinstaller.exe -ErrorAction SilentlyContinue | Where-Object { $_.FullName -match "Microsoft Visual Studio" }).FullName
-        if ($vsixInstallerPath) {
-          & $vsixInstallerPath /quiet qt-vsaddin-msvc2022-3.0.2.vsix
-        } else {
-          Write-Error "vsixinstaller.exe not found."
-          exit 1
-        }
-      shell: pwsh
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe" /quiet qt-vsaddin-msvc2022-3.0.2.vsix
+      shell: cmd
 
     - name: Set Qt version in Visual Studio
       run: |
