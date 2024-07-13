@@ -1,50 +1,26 @@
-name: MSBuild
+name: Qt VS Add-in Setup (Windows)
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-env:
-  QT_VERSION: 6.6.1
-  QT_PATH: ${{ github.workspace }}\Qt\6.6.1\msvc2019_64
-
-permissions:
-  contents: read
+  push: # Trigger the workflow on pushes
 
 jobs:
   build:
     runs-on: windows-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-
-    - name: Install Visual Studio 2022
-      uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Download Qt VSIX
-      run: curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
-
-    - name: Install VSIX PowerShell Module
-      run: |
-        Install-Module -Name VSSetup -Scope CurrentUser -Force -SkipPublisherCheck
-
-    - name: Install Qt VSIX
-      run: |
-        Import-Module VSSetup
-        $vsixInstallerPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\VSIXInstaller.exe"
-        if (Test-Path $vsixInstallerPath) {
-          Start-Process -Wait -FilePath $vsixInstallerPath -ArgumentList "qt-vsaddin-msvc2022-3.0.2.vsix"
-        } else {
-          Write-Error "VSIX Installer not found at $vsixInstallerPath"
-        }
-
-    - name: Install Qt
-      run: choco install qt --version=%QT_VERSION% -y
-
-    - name: Setup Qt Environment
-      run: |
-        echo "QT_PATH=${{ env.QT_PATH }}" >> $GITHUB_ENV
-        echo "${{ env.QT_PATH }}\bin" >> $GITHUB_PATH
+      - uses: actions/checkout@v3 # Checkout the repository code
+      - name: Install Visual Studio Build Tools
+        uses: microsoft/windows-update@v1.1
+        with:
+          updates: 'BuildTools-2022'
+      - name: Install Visual Studio 2022 C++ Desktop workload
+        shell: powershell
+        run: |
+          Install-Product -Name VisualStudio.Desktop.Cpp.Workload -IncludeRecommended -Wait -Source https://visualstudio.microsoft.com/downloads/
+      - name: Download Qt VS Add-in (version 3.0.2)
+        uses: actions/download@v3
+        with:
+          url: https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix  # Specific version for Qt VS Add-in
+          dest: .\
+      - name: Install Qt VS Add-in
+        run: |
+          code --install-extension .\qt-vsaddin-msvc2022-3.0.2.vsix
