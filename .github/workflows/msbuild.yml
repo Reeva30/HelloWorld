@@ -5,7 +5,7 @@ on: [push, pull_request]
 env:
   QT_VERSION: 6.6.1
   DEVENV_PATH2: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
-  QT_PATH: ${{ github.workspace }}\Qt\6.6.1\msvc2019_64
+  QT_PATH: ${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64
 
 permissions:
   contents: read
@@ -21,16 +21,20 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Download and Install Qt VS add-in
+    - name: Download Qt VS add-in
       run: |
         curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
-        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe" /q qt-vsaddin-msvc2022-3.0.2.vsix
+      shell: cmd
+
+    - name: Install Qt VS add-in
+      run: |
+        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe" /quiet /logFile:vsixinstall.log qt-vsaddin-msvc2022-3.0.2.vsix
       shell: cmd
 
     - name: Add Qt version in Visual Studio
       run: |
         set QT_VS_VERSION=3.0
-        set QT_PATH=${{ github.workspace }}\Qt\6.6.1\msvc2019_64
+        set QT_PATH=${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64
         set DEVENV_PATH2="C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
         "%DEVENV_PATH2%" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=Qt-%QT_VERSION%-msvc2019_64&Path=%QT_PATH%"
       shell: cmd
@@ -38,7 +42,7 @@ jobs:
     - name: Set Qt version in Visual Studio
       run: |
         set QT_VS_VERSION=3.0
-        set QT_PATH=${{ github.workspace }}\Qt\6.6.1\msvc2019_64
+        set QT_PATH=${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64
         set DEVENV_PATH2="C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
         "%DEVENV_PATH2%" /command "Qt5.QtOptions.QtDefaultVersion?Name=Qt-%QT_VERSION%-msvc2019_64"
       shell: cmd
