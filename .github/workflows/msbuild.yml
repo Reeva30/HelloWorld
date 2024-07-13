@@ -31,13 +31,26 @@ jobs:
         $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe"
         $vsixInstallerArguments = '/quiet', '/logFile:vsixinstall.log', 'qt-vsaddin-msvc2022-3.0.2.vsix'
         Write-Output "Installing Qt VS add-in..."
-        $process = Start-Process -FilePath $vsixPath -ArgumentList $vsixInstallerArguments -NoNewWindow -Wait -PassThru
-        $process | Format-Table -Property Id, ProcessName, CPU, StartTime, Path -AutoSize
-        $exitCode = $process.ExitCode
-        Write-Output "VSIX Installer exited with code $exitCode"
-        if ($exitCode -ne 0) {
-          Write-Error "VSIX Installer failed. Check the log file for details."
-          exit $exitCode
+        
+        # Start the process and wait for it with a timeout
+        $process = Start-Process -FilePath $vsixPath -ArgumentList $vsixInstallerArguments -NoNewWindow -PassThru
+        
+        # Wait for the process to exit with a timeout (e.g., 120 seconds)
+        $timeout = 120
+        $process.WaitForExit($timeout * 1000)
+
+        # Check if the process is still running
+        if (!$process.HasExited) {
+          Write-Output "VSIX Installer is still running after $timeout seconds, terminating..."
+          $process.Kill()
+          Write-Error "VSIX Installer process was killed due to timeout."
+        } else {
+          $exitCode = $process.ExitCode
+          Write-Output "VSIX Installer exited with code $exitCode"
+          if ($exitCode -ne 0) {
+            Write-Error "VSIX Installer failed. Check the log file for details."
+            exit $exitCode
+          }
         }
       shell: pwsh
 
