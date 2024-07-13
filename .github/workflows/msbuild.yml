@@ -62,20 +62,12 @@ jobs:
         }
       shell: pwsh
 
-    - name: Create PowerShell script to set Qt version
+    - name: Create batch script to set Qt version
       run: |
-        $scriptContent = @'
-        $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
-        $qtPath = "${{ github.workspace }}\Qt\6.6.1\msvc2019_64"
-        & "$devenvPath" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath" 2>&1 | Tee-Object -FilePath qt_version_log.txt
-        Write-Output "Qt version log:"
-        Get-Content -Path qt_version_log.txt
-        '@
-        $scriptPath = "set_qt_version.ps1"
-        $scriptContent | Set-Content -Path $scriptPath
-      shell: pwsh
+        echo @echo off > set_qt_version.bat
+        echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=%QT_PATH%" >> set_qt_version.bat
+        echo if %%errorlevel%% neq 0 exit /b %%errorlevel%% >> set_qt_version.bat
 
-    - name: Run PowerShell script to set Qt version
+    - name: Run batch script to set Qt version
       run: |
-        powershell -ExecutionPolicy Bypass -File set_qt_version.ps1
-      shell: cmd
+        cmd /c set_qt_version.bat
