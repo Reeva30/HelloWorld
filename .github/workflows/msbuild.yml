@@ -24,7 +24,7 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-   # Step 1: Download the Qt VS add-in
+ # Step 1: Download the Qt VS add-in
     - name: Download Qt VS add-in
       run: |
         curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
@@ -42,7 +42,7 @@ jobs:
         echo '$qtPath = "${{ env.QT_PATH }}"' >> set_qt_version.ps1
         echo '$devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"' >> set_qt_version.ps1
         echo 'Write-Output "Setting Qt version..."' >> set_qt_version.ps1
-        echo 'Start-Process -FilePath $devenvPath -ArgumentList "/command `"Qt5.QtOptions.QtVersions.AddVersion?Name=$qtVersion&Path=$qtPath`"" -Wait -NoNewWindow' >> set_qt_version.ps1
+        echo 'Start-Process -FilePath $devenvPath -ArgumentList "/command `"Qt5.QtOptions.QtVersions.AddVersion?Name=$qtVersion&Path=$qtPath`"" -Wait -NoNewWindow -RedirectStandardOutput output.log -RedirectStandardError error.log' >> set_qt_version.ps1
         echo 'Write-Output "Qt version set successfully."' >> set_qt_version.ps1
         echo 'exit' >> set_qt_version.ps1
 
@@ -52,7 +52,17 @@ jobs:
         Start-Process -FilePath "powershell.exe" -ArgumentList "-File `"%cd%\set_qt_version.ps1`"" -Verb RunAs -Wait
       shell: powershell
 
-    # Step 5: Validate Qt version configuration
+    # Step 5: Upload logs for inspection
+    - name: Upload logs
+      if: always()
+      uses: actions/upload-artifact@v2
+      with:
+        name: qt-version-setting-logs
+        path: |
+          output.log
+          error.log
+
+    # Step 6: Validate Qt version configuration
     - name: Validate Qt version configuration
       run: |
         "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" /command "Qt5.QtOptions.QtVersions"
