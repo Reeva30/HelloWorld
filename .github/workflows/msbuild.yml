@@ -28,21 +28,21 @@ jobs:
 
     - name: Install Qt VS add-in
       run: |
-        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe" /quiet /logFile:vsixinstall.log qt-vsaddin-msvc2022-3.0.2.vsix
-      shell: cmd
+        Start-Process "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe" -ArgumentList '/quiet', '/logFile:vsixinstall.log', 'qt-vsaddin-msvc2022-3.0.2.vsix' -Wait -Verb RunAs
+      shell: pwsh
 
     - name: Add Qt version in Visual Studio
       run: |
-        set QT_VS_VERSION=3.0
-        set QT_PATH=${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64
-        set DEVENV_PATH2="C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
-        "%DEVENV_PATH2%" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=Qt-%QT_VERSION%-msvc2019_64&Path=%QT_PATH%"
-      shell: cmd
+        $env:QT_VS_VERSION="3.0"
+        $env:QT_PATH="${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64"
+        $env:DEVENV_PATH2="C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
+        & $env:DEVENV_PATH2 /command "Qt5.QtOptions.QtVersions.AddVersion?Name=Qt-$env:QT_VERSION-msvc2019_64&Path=$env:QT_PATH"
+      shell: pwsh
 
     - name: Set Qt version in Visual Studio
       run: |
-        set QT_VS_VERSION=3.0
-        set QT_PATH=${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64
-        set DEVENV_PATH2="C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
-        "%DEVENV_PATH2%" /command "Qt5.QtOptions.QtDefaultVersion?Name=Qt-%QT_VERSION%-msvc2019_64"
-      shell: cmd
+        $env:QT_VS_VERSION="3.0"
+        $env:QT_PATH="${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64"
+        $env:DEVENV_PATH2="C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
+        & $env:DEVENV_PATH2 /command "Qt5.QtOptions.QtDefaultVersion?Name=Qt-$env:QT_VERSION-msvc2019_64"
+      shell: pwsh
