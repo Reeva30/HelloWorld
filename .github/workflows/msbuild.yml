@@ -46,7 +46,7 @@ jobs:
         echo 'Write-Output "Qt version set successfully."' >> set_qt_version.ps1
         echo 'exit' >> set_qt_version.ps1
 
-    # Step 4: Run the PowerShell script with elevated permissions
+  # Step 4: Run the PowerShell script with elevated permissions
     - name: Run PowerShell script with elevated permissions
       run: |
         Start-Process -FilePath "powershell.exe" -ArgumentList "-File `"%cd%\set_qt_version.ps1`"" -Verb RunAs -Wait
@@ -58,9 +58,7 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: qt-version-setting-logs
-        path: |
-          output.log
-          error.log
+        path: output.log
 
     # Step 6: Validate Qt version configuration
     - name: Validate Qt version configuration
