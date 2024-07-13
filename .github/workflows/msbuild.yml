@@ -2,9 +2,9 @@ name: MSBuild
 
 on:
   push:
-    branches: [ "Demo" ]
+    branches: [ "main" ]
   pull_request:
-    branches: [ "Demo" ]
+    branches: [ "main" ]
 
 env:
   QT_VERSION: 6.6.1
