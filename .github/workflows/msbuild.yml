@@ -1,79 +1,44 @@
-name: Setup Qt in Visual Studio 2022 (Windows)
+name: CI
 
-on:
-  push: # Trigger the workflow on pushes
+on: [push, pull_request]
+
+env:
+  QT_VERSION: 6.6.1
+  DEVENV_PATH2: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
+  QT_PATH: ${{ github.workspace }}\Qt\6.6.1\msvc2019_64
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: windows-latest
 
-    env:
-      QT_VERSION: '6.6.1'
-      QT_INSTALL_PATH: 'X:\\OpenTwin\\Repo\\Third_Party_Libraries\\Qt\\6.6.1\\msvc2019_64'
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3 # Checkout the repository code
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Setup MSBuild and Visual Studio
-        uses: microsoft/setup-msbuild@v1.0.2
-        with:
-          vs-version: '17.0' # Visual Studio 2022
+    - name: Install Visual Studio 2022
+      uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: Install Qt VS Add-in
-        shell: powershell
-        run: |
-          echo "Installing Qt VS Add-in..."
-          $vsixInstallerPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe"
-          if (-not (Test-Path $vsixInstallerPath)) {
-            throw "vsixinstaller.exe not found at $vsixInstallerPath."
-          }
-          Start-Process -FilePath $vsixInstallerPath -ArgumentList 'qt-vsaddin-msvc2022-3.0.2.vsix', '/quiet', '/norestart' -NoNewWindow -Wait
+    - name: Download and Install Qt VS add-in
+      run: |
+        curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
+        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\VSIXInstaller.exe" /q qt-vsaddin-msvc2022-3.0.2.vsix
+      shell: cmd
 
-      - name: Configure Qt in Visual Studio
-        shell: powershell
-        run: |
-          echo "Configuring Qt in Visual Studio..."
-          $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
-          if (-not (Test-Path $devenvPath)) {
-            throw "devenv.com not found at $devenvPath."
-          }
+    - name: Add Qt version in Visual Studio
+      run: |
+        set QT_VS_VERSION=3.0
+        set QT_PATH=${{ github.workspace }}\Qt\6.6.1\msvc2019_64
+        set DEVENV_PATH2="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
+        "%DEVENV_PATH2%" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=Qt-%QT_VS_VERSION%-msvc2019_64&Path=%QT_PATH%"
+      shell: cmd
 
-          # Define the Qt version
-          $qtVersionName = "${{ env.QT_VERSION }}"
-          $qtVersionPath = "${{ env.QT_INSTALL_PATH }}"
-
-          # Create a temporary .bat file to execute the necessary commands in Visual Studio
-          $batFile = [System.IO.Path]::GetTempFileName() + ".bat"
-          $batContent = @"
-          @echo off
-          echo Configuring Qt version in Visual Studio...
-          "$devenvPath" /command "Tools.ExtensionsandUpdates"
-          timeout /t 5
-          "$devenvPath" /command "Qt5.AddQtVersion"
-          timeout /t 5
-          "$devenvPath" /command "Qt5.QtVersions"
-          timeout /t 5
-          "$devenvPath" /command "Qt5.AddQtVersion"
-          timeout /t 5
-          "$devenvPath" /command "Qt5.DefaultQtVersion"
-          timeout /t 5
-          echo Finished configuring Qt version.
-"@
-          Set-Content -Path $batFile -Value $batContent
-
-          # Execute the .bat file
-          Start-Process -FilePath $batFile -NoNewWindow -Wait
-
-          # Clean up the .bat file
-          Remove-Item -Path $batFile
-
-      - name: Verify Qt Configuration
-        shell: powershell
-        run: |
-          echo "Verifying Qt configuration in Visual Studio..."
-          $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
-          if (-not (Test-Path $devenvPath)) {
-            throw "devenv.com not found at $devenvPath."
-          }
-          & "$devenvPath" /command "Qt5.QtVersions"
+    - name: Set Qt version in Visual Studio
+      run: |
+        set QT_VS_VERSION=3.0
+        set QT_PATH=${{ github.workspace }}\Qt\6.6.1\msvc2019_64
+        set DEVENV_PATH2="C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
+        "%DEVENV_PATH2%" /command "Qt5.QtOptions.QtDefaultVersion?Name=Qt-%QT_VS_VERSION%-msvc2019_64"
+      shell: cmd
