@@ -24,12 +24,12 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-    # Step 1: Download the Qt VS add-in
+   # Step 1: Download the Qt VS add-in
     - name: Download Qt VS add-in
       run: |
         curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
 
-  # Step 2: Install the Qt VS add-in with elevated permissions
+    # Step 2: Install the Qt VS add-in with elevated permissions
     - name: Install Qt VS add-in
       run: |
         Start-Process -FilePath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe" -ArgumentList "qt-vsaddin-msvc2022-3.0.2.vsix /quiet /norestart" -Verb RunAs
@@ -38,10 +38,13 @@ jobs:
     # Step 3: Create a PowerShell script to set Qt version in Visual Studio 2022
     - name: Create PowerShell script for setting Qt version
       run: |
-        echo $qtVersion = "6.6.1" > set_qt_version.ps1
-        echo $qtPath = "${{ env.QT_PATH }}" >> set_qt_version.ps1
-        echo $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" >> set_qt_version.ps1
-        echo Start-Process -FilePath $devenvPath -ArgumentList "/command `"Qt5.QtOptions.QtVersions.AddVersion?Name=$qtVersion&Path=$qtPath`"" -Wait -NoNewWindow >> set_qt_version.ps1
+        echo '$qtVersion = "6.6.1"' > set_qt_version.ps1
+        echo '$qtPath = "${{ env.QT_PATH }}"' >> set_qt_version.ps1
+        echo '$devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"' >> set_qt_version.ps1
+        echo 'Write-Output "Setting Qt version..."' >> set_qt_version.ps1
+        echo 'Start-Process -FilePath $devenvPath -ArgumentList "/command `"Qt5.QtOptions.QtVersions.AddVersion?Name=$qtVersion&Path=$qtPath`"" -Wait -NoNewWindow' >> set_qt_version.ps1
+        echo 'Write-Output "Qt version set successfully."' >> set_qt_version.ps1
+        echo 'exit' >> set_qt_version.ps1
 
     # Step 4: Run the PowerShell script with elevated permissions
     - name: Run PowerShell script with elevated permissions
