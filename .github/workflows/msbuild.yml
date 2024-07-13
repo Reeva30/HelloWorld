@@ -52,5 +52,7 @@ jobs:
     - name: Install Qt VS Add-in
       run: |
         $vsixInstallerPath = $env:VSIX_INSTALLER_PATH
-        & $vsixInstallerPath /q "qt-vsaddin-msvc2022-3.0.2.vsix" | Tee-Object -FilePath install.log
-        Get-Content install.log
+        Start-Process $vsixInstallerPath -ArgumentList "/q", "qt-vsaddin-msvc2022-3.0.2.vsix" -Wait -NoNewWindow -PassThru | ForEach-Object {
+          $_.StandardOutput.ReadToEnd()
+          $_.StandardError.ReadToEnd()
+        }
