@@ -24,7 +24,7 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-    # Step 1: Download the Qt VS add-in
+  # Step 1: Download the Qt VS add-in
     - name: Download Qt VS add-in
       run: |
         curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
@@ -38,5 +38,5 @@ jobs:
     # Step 3: Set Qt version and path in Visual Studio 2022
     - name: Set Qt version in Visual Studio
       run: |
-        "%DEVENV_PATH2%" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=%QT_PATH%"
-      shell: cmd
+        & "${{ env.DEVENV_PATH2 }}" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=${{ env.QT_VERSION }}&Path=${{ env.QT_PATH }}"
+      shell: powershell
