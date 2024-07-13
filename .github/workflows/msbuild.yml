@@ -24,17 +24,21 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-
     - name: Download Qt VSIX
       run: curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
 
     - name: Install Qt VSIX
       run: |
-        $vsixInstallerPath = "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VSIXInstaller.exe"
-        if (Test-Path $vsixInstallerPath) {
+        $vsixInstallerPaths = @(
+          "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VSIXInstaller.exe",
+          "C:\Program Files\Microsoft Visual Studio\2022\Professional\Common7\IDE\VSIXInstaller.exe",
+          "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\VSIXInstaller.exe"
+        )
+        $vsixInstallerPath = $vsixInstallerPaths | Where-Object { Test-Path $_ }
+        if ($vsixInstallerPath) {
           Start-Process -Wait -FilePath $vsixInstallerPath -ArgumentList "qt-vsaddin-msvc2022-3.0.2.vsix"
         } else {
-          Write-Error "VSIX Installer not found at $vsixInstallerPath"
+          Write-Error "VSIX Installer not found in any of the expected paths"
         }
 
     - name: Install Qt
