@@ -22,6 +22,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
+
+
         
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
@@ -65,8 +67,7 @@ jobs:
       run: |
         $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
         $qtPath = "${{ env.QT_PATH }}"
-        $command = "$devenvPath /command `"Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath`""
-        Invoke-Expression $command 2>&1 | Tee-Object -FilePath qt_version_log.txt
+        & "$devenvPath" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath" 2>&1 | Tee-Object -FilePath qt_version_log.txt
         Write-Output "Qt version log:"
         Get-Content -Path qt_version_log.txt
       shell: pwsh
