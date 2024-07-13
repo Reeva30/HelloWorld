@@ -37,7 +37,9 @@ jobs:
 
     - name: Install Qt VS add-in
       run: |
-        Start-Process -FilePath "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe" -ArgumentList "/quiet", "qt-vsaddin-msvc2022-3.0.2.vsix" -NoNewWindow -Wait -PassThru
+        $vsixInstallerPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe"
+        Start-Process -FilePath $vsixInstallerPath -ArgumentList "/quiet /logFile:vsixinstall.log", "qt-vsaddin-msvc2022-3.0.2.vsix" -NoNewWindow -Wait -PassThru
+        Get-Content -Path vsixinstall.log | Write-Output
       shell: pwsh
 
     - name: Set Qt version in Visual Studio
