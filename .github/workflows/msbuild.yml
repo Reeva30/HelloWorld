@@ -22,13 +22,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
- # Step 2: Check out the third-party repository
-    - name: Check out the third-party repository
-      uses: actions/checkout@v2
-      with:
-        repository: OT-OpenTwin/ThirdParty
-        path: ThirdParty
-        fetch-depth: 1  # Limit fetching to the last commit
+
         
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
