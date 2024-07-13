@@ -40,3 +40,4 @@ jobs:
             throw "devenv.exe not found at $devenvPath."
           }
           & "$devenvPath" /setup
+
