@@ -37,7 +37,7 @@ jobs:
     - name: Create batch script to set Qt version
       run: |
         echo @echo off > set_qt_version.bat
-        echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=%QT_PATH%" >> set_qt_version.bat
+        echo "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1^&Path=%QT_PATH%" >> set_qt_version.bat
         echo if %%errorlevel%% neq 0 exit /b %%errorlevel%% >> set_qt_version.bat
         echo exit 0 >> set_qt_version.bat
 
