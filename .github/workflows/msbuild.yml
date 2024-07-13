@@ -21,18 +21,6 @@ jobs:
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Install Visual Studio components
-      uses: microsoft/setup-visualstudio@v1
-      with:
-        components: |
-          Microsoft.VisualStudio.Component.VC.Tools.x86.x64
-          Microsoft.VisualStudio.Component.Windows10SDK.19041
-          Microsoft.VisualStudio.Component.VC.CMake.Project
-          Microsoft.VisualStudio.ComponentGroup.NativeDesktop.Core
-          Microsoft.VisualStudio.ComponentGroup.NativeDesktop.WinXP
-          Microsoft.VisualStudio.Component.VC.ATLMFC
-          Microsoft.VisualStudio.Component.VC.14.29.16.10.x86.x64
-
     - name: Download Qt VS add-in
       run: |
         curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
