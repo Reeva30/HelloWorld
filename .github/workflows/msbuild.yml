@@ -35,4 +35,8 @@ jobs:
         shell: powershell
         run: |
           echo "Verifying Qt VS Add-in installation..."
-          Get-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\VisualStudio\\Setup\\Instances\\*' | Select-Object -ExpandProperty InstallationPath | ForEach-Object { & "$_\Common7\IDE\devenv.exe" /setup }
+          $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe"
+          if (-not (Test-Path $devenvPath)) {
+            throw "devenv.exe not found at $devenvPath."
+          }
+          & "$devenvPath" /setup
