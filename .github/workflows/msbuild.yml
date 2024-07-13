@@ -23,7 +23,7 @@ jobs:
           Write-Error "vswhere.exe not found. Visual Studio 2022 might not be installed."
           exit 1
         }
-        & $vswherePath -latest -version [17.0,18.0) -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+        & $vswherePath -latest -version "[17.0,18.0)" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
 
     - name: Download Qt VS Add-in
       run: |
@@ -43,7 +43,7 @@ jobs:
       id: find-vsix
       run: |
         $vswherePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
-        $vsInstallPath = & $vswherePath -latest -version [17.0,18.0) -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+        $vsInstallPath = & $vswherePath -latest -version "[17.0,18.0)" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
         $vsixInstallerPath = Join-Path -Path $vsInstallPath -ChildPath "Common7\IDE\VSIXInstaller.exe"
         if (-Not (Test-Path $vsixInstallerPath)) {
           Write-Error "VSIXInstaller.exe not found."
