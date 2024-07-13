@@ -30,3 +30,10 @@ jobs:
       run: |
         runas /user:Administrator "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe /quiet /logFile:vsixinstall.log qt-vsaddin-msvc2022-3.0.2.vsix"
       shell: cmd
+      
+    - name: Upload VSIX Installer Log
+      if: failure()
+      uses: actions/upload-artifact@v2
+      with:
+        name: vsixinstall-log
+        path: vsixinstall.log
