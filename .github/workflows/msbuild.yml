@@ -1,38 +1,31 @@
-name: Qt VS Add-in Setup (Windows)
+name: Setup Visual Studio with Qt Addin
 
-on:
-  push: # Trigger the workflow on pushes
+on: [push]
 
 jobs:
-  build:
+  setup-vs:
     runs-on: windows-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3 # Checkout the repository code
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      - name: Setup MSBuild and Visual Studio
-        uses: microsoft/setup-msbuild@v1.0.2
-        with:
-          vs-version: '17.0' # Visual Studio 2022
+    - name: Install Visual Studio 2022
+      run: |
+        choco install visualstudio2022community --package-parameters "--add Microsoft.VisualStudio.Workload.NativeDesktop --includeRecommended --includeOptional"
+      shell: powershell
 
-      - name: Download Qt VS Add-in (version 3.0.2)
-        run: |
-          echo "Downloading Qt VS Add-in..."
-          curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
+    - name: Download Qt VS Addin
+      run: |
+        Invoke-WebRequest -Uri "https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix" -OutFile "qt-vsaddin-msvc2022-3.0.2.vsix"
+      shell: powershell
 
-      - name: Install Qt VS Add-in
-        shell: powershell
-        run: |
-          echo "Installing Qt VS Add-in..."
-          $vsixInstallerPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe"
-          if (-not (Test-Path $vsixInstallerPath)) {
-            throw "vsixinstaller.exe not found at $vsixInstallerPath."
-          }
-          Start-Process -FilePath $vsixInstallerPath -ArgumentList 'qt-vsaddin-msvc2022-3.0.2.vsix', '/quiet', '/norestart' -NoNewWindow -Wait
+    - name: Install Qt VS Addin
+      run: |
+        Start-Process -FilePath "qt-vsaddin-msvc2022-3.0.2.vsix" -ArgumentList "/quiet" -Wait
+      shell: powershell
 
-      - name: Verify Installation
-        shell: powershell
-        run: |
-          echo "Verifying Qt VS Add-in installation..."
-          Get-ItemProperty -Path 'HKLM:\\SOFTWARE\\Microsoft\\VisualStudio\\Setup\\Instances\\*' | Select-Object -ExpandProperty InstallationPath | ForEach-Object { & "$_\Common7\IDE\devenv.exe" /setup }
+    - name: Integrate Qt Addin to Visual Studio 2022
+      run: |
+        & "C:\Program Files (x86)\Microsoft Visual Studio\2022\Community\Common7\IDE\devenv.exe" /setup
+      shell: powershell
