@@ -29,8 +29,8 @@ jobs:
     - name: Set up Qt
       run: |
         mkdir $env:GITHUB_WORKSPACE\\Qt
-        curl -L -o qt.7z http://download.qt.io/official_releases/qt/6.6/6.6.1/qt-opensource-windows-x86-6.6.1.7z
-        7z x qt.7z -o$env:GITHUB_WORKSPACE\\Qt
+        Invoke-WebRequest -Uri http://download.qt.io/official_releases/qt/6.6/6.6.1/qt-opensource-windows-x86-6.6.1.7z -OutFile $env:GITHUB_WORKSPACE\\qt.7z
+        7z x $env:GITHUB_WORKSPACE\\qt.7z -o$env:GITHUB_WORKSPACE\\Qt
       shell: powershell
 
     - name: Clone vstools repository
