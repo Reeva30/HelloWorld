@@ -35,11 +35,28 @@ jobs:
         dir "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE"
       shell: cmd
 
-    - name: Install Qt VS add-in
+    - name: Create Scheduled Task to Install Qt VS add-in
       run: |
-        $vsixInstallerPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe"
-        Start-Process -FilePath $vsixInstallerPath -ArgumentList "/quiet /logFile:vsixinstall.log", "qt-vsaddin-msvc2022-3.0.2.vsix" -NoNewWindow -Wait -PassThru
-        Get-Content -Path vsixinstall.log | Write-Output
+        $action = New-ScheduledTaskAction -Execute "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe" -Argument "/quiet qt-vsaddin-msvc2022-3.0.2.vsix"
+        $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(15)
+        $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
+        $task = New-ScheduledTask -Action $action -Trigger $trigger -Principal $principal
+        Register-ScheduledTask -TaskName "InstallQtVSAddin" -InputObject $task
+      shell: pwsh
+
+    - name: Wait for Scheduled Task
+      run: |
+        Start-Sleep -Seconds 60
+      shell: pwsh
+
+    - name: Check if Scheduled Task Completed
+      run: |
+        $task = Get-ScheduledTask -TaskName "InstallQtVSAddin"
+        $taskState = $task.State
+        if ($taskState -ne 'Ready') {
+          Write-Error "Scheduled task did not complete successfully."
+          exit 1
+        }
       shell: pwsh
 
     - name: Set Qt version in Visual Studio
