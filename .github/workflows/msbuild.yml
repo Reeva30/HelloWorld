@@ -25,9 +25,9 @@ jobs:
         shell: powershell
         run: |
           echo "Installing Qt VS Add-in..."
-          $vsixInstallerPath = (Get-Command vsixinstaller.exe).Source
-          if (-not $vsixInstallerPath) {
-            throw "vsixinstaller.exe not found in PATH."
+          $vsixInstallerPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\vsixinstaller.exe"
+          if (-not (Test-Path $vsixInstallerPath)) {
+            throw "vsixinstaller.exe not found at $vsixInstallerPath."
           }
           Start-Process -FilePath $vsixInstallerPath -ArgumentList 'qt-vsaddin-msvc2022-3.0.2.vsix', '/quiet', '/norestart' -NoNewWindow -Wait
 
