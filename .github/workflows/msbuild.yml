@@ -1,71 +1,57 @@
-name: Build with CMake and Visual Studio
+
+name: Qt VS Add-in Setup (Windows)
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-env:
-  QT_VERSION: 6.6.1
-  QT_PATH: ${{ github.workspace }}\\Qt\\6.6.1\\msvc2019_64
-  DEVENV_PATH: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
-
-permissions:
-  contents: read
+  push: # Trigger the workflow on pushes
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3 # Checkout the repository code
 
-    - name: Install Git
-      run: choco install git -y
-      shell: powershell
+      - name: Setup MSBuild and Visual Studio
+        uses: microsoft/setup-msbuild@v1.0.2
+        with:
+          vs-version: '17.0' # Visual Studio 2022
 
-    - name: Install CMake
-      run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System' -y
-      shell: powershell
+      - name: Download Qt VS Add-in (version 3.0.2)
+        run: |
+          echo "Downloading Qt VS Add-in..."
+          curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
 
-    - name: Install 7zip
-      run: choco install 7zip -y
-      shell: powershell
 
-    - name: Install Visual Studio 2022
-      uses: microsoft/setup-msbuild@v1.0.2
+      - name: Install Qt VS add-in
+        run: |
+            $vsixPaths = @(
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe",
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\IDE\\VSIXInstaller.exe",
+              "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\VSIXInstaller.exe"
+            )
+    
+            $vsixPath = $vsixPaths | Where-Object { Test-Path $_ }
+    
+            if (-not $vsixPath) {
+              Write-Error "VSIXInstaller.exe not found in any of the expected paths."
+              exit 1
+            }
+    
+            Write-Output "Using VSIXInstaller at path: $vsixPath"
+    
+            Start-Process -FilePath $vsixPath -ArgumentList "/quiet", "/logFile:vsixinstall.log", "qt-vsaddin-msvc2022-3.0.2.vsix" -NoNewWindow -Wait
+        shell: powershell
 
-    - name: Download and Install Qt VS add-in
-      run: |
-        curl -L -o qt-vsaddin-msvc2022-3.0.2.vsix https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix
-        "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe" /quiet /logFile:vsixinstall.log qt-vsaddin-msvc2022-3.0.2.vsix
-      shell: cmd
 
-    - name: Download Qt
-      run: |
-        mkdir $env:GITHUB_WORKSPACE\\Qt
-        Invoke-WebRequest -Uri https://download.qt.io/archive/qt/6.6/6.6.1/qt-opensource-windows-x86-6.6.1.7z -OutFile $env:GITHUB_WORKSPACE\\qt.7z
-        7z x $env:GITHUB_WORKSPACE\\qt.7z -o$env:GITHUB_WORKSPACE\\Qt
-      shell: powershell
-
-    - name: Configure CMake
-      run: |
-        cmake -S . -B build -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=$env:QT_PATH
-      shell: powershell
-
-    - name: Build with devenv.com
-      run: |
-        "%DEVENV_PATH%" build\\HelloWorld.sln /Build "%BUILD_CONFIGURATION%" /Out buildLog_Debug.txt
-      shell: cmd
-
-    - name: Add Qt version in Visual Studio
-      run: |
-        "%DEVENV_PATH%" /command "Qt5.QtOptions.QtVersions.AddVersion?Name=Qt-%QT_VERSION-msvc2019_64&Path=%QT_PATH%"
-      shell: cmd
-
-    - name: Set Qt version in Visual Studio
-      run: |
-        "%DEVENV_PATH%" /command "Qt5.QtOptions.QtDefaultVersion?Name=Qt-%QT_VERSION-msvc2019_64"
-      shell: cmd
+       
+             
+      - name: Verify Installation
+        shell: powershell
+        run: |
+          echo "Verifying Qt VS Add-in installation..."
+          $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe"
+          if (-not (Test-Path $devenvPath)) {
+            throw "devenv.exe not found at $devenvPath."
+          }
+          & "$devenvPath" /setup
