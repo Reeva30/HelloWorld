@@ -22,7 +22,6 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-
         
     - name: Install Visual Studio 2022
       uses: microsoft/setup-msbuild@v1.0.2
@@ -51,11 +50,12 @@ jobs:
         Start-Sleep -Seconds 60
       shell: pwsh
 
-    - name: Check if Scheduled Task Completed
+    - name: Check Scheduled Task Status
       run: |
         $task = Get-ScheduledTask -TaskName "InstallQtVSAddin"
         $taskState = $task.State
         if ($taskState -ne 'Ready') {
+          Get-ScheduledTaskInfo -TaskName "InstallQtVSAddin" | Select-Object -Property *
           Write-Error "Scheduled task did not complete successfully."
           exit 1
         }
@@ -65,7 +65,8 @@ jobs:
       run: |
         $devenvPath = "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com"
         $qtPath = "${{ env.QT_PATH }}"
-        Start-Process -FilePath $devenvPath -ArgumentList "/command Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath" -NoNewWindow -Wait -PassThru -RedirectStandardOutput qt_version_log.txt -RedirectStandardError qt_version_error.txt
-        Get-Content -Path qt_version_log.txt | Write-Output
-        Get-Content -Path qt_version_error.txt | Write-Output
+        $command = "$devenvPath /command `"Qt5.QtOptions.QtVersions.AddVersion?Name=6.6.1&Path=$qtPath`""
+        Invoke-Expression $command 2>&1 | Tee-Object -FilePath qt_version_log.txt
+        Write-Output "Qt version log:"
+        Get-Content -Path qt_version_log.txt
       shell: pwsh
