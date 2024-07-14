@@ -14,11 +14,11 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     # Step 2: Check out the third-party repository
     - name: Check out the third-party repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: OT-OpenTwin/ThirdParty
         path: ThirdParty
