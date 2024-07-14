@@ -61,25 +61,18 @@ jobs:
         $qtVersionName = "6.6.1"
         $qtPath = "X:\OpenTwin\Repo\Third_Party_Libraries\Qt\6.6.1\msvc2019_64"
         
-        # Path to the Qt settings file used by the add-in (example path)
-        $qtSettingsPath = "$env:APPDATA\QtProject\qtcreator\qtversion.xml"
+        # Path to qmake.exe
+        $qmakePath = Join-Path $qtPath "bin\qmake.exe"
         
-        # Check if the settings file exists
-        if (Test-Path $qtSettingsPath) {
-            [xml]$qtConfig = Get-Content $qtSettingsPath
-            
-            # Create a new qtversion element
-            $newVersion = $qtConfig.CreateElement("qtversion")
-            $newVersion.SetAttribute("Id", "qt." + $qtVersionName)
-            $newVersion.SetAttribute("Name", $qtVersionName)
-            $qmakePath = Join-Path $qtPath "bin\qmake.exe"
-            $newVersion.SetAttribute("QMakePath", $qmakePath)
-        
-            # Append the new version to the qtversions node
-            $qtConfig.qtcreator.qtversions.AppendChild($newVersion) | Out-Null
-            $qtConfig.Save($qtSettingsPath)
-        
-            Write-Host "Configured Qt version $qtVersionName with path $qtPath"
-        } else {
-            Write-Error "Qt settings file not found at $qtSettingsPath"
+        # Registry path for Qt versions (example path, adjust as necessary)
+        $registryPath = "HKCU:\Software\QtProject\QtVersions"
+
+        # Create the registry key if it doesn't exist
+        if (-Not (Test-Path $registryPath)) {
+            New-Item -Path $registryPath -Force
         }
+
+        # Set the Qt version in the registry
+        Set-ItemProperty -Path $registryPath -Name $qtVersionName -Value $qmakePath
+
+        Write-Host "Configured Qt version $qtVersionName with path $qtPath in registry"
