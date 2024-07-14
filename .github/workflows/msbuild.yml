@@ -9,10 +9,9 @@ on:
       - main
 
 env:
-      DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE
-      DEVENV_PATH2: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
-      QT_PATH: ${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64
-
+  DEVENV_PATH: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE"
+  DEVENV_PATH2: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
+  QT_PATH: "${{ github.workspace }}\\ThirdParty\\Qt\\6.6.1\\msvc2019_64"
 
 permissions:
   contents: read
@@ -24,25 +23,23 @@ jobs:
     steps:
     
     - name: Check out the main project repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: OT-OpenTwin/OpenTwin
         ref: Ci
         path: OpenTwin
 
     - name: Check out the third-party repository
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
       with:
         repository: OT-OpenTwin/ThirdParty
         path: ThirdParty
-        fetch-depth: 1  # Limit fetching to the last commit
+        fetch-depth: 1
 
     - name: Install Rust 1.76.0
-      run: |
-        choco install rust --version=1.76.0 -y
+      run: choco install rust --version=1.76.0 -y
       shell: cmd
 
-   
     - name: Add Visual Studio to PATH
       uses: microsoft/setup-msbuild@v1.0.2
 
@@ -53,14 +50,14 @@ jobs:
     - name: Set up Node.js
       uses: actions/setup-node@v2
       with:
-        node-version: '14' # specify the version you need
+        node-version: '14'
 
     - name: Install Yarn
       run: npm install -g yarn
 
     - name: Install dependencies
       run: yarn install
-      
+
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -73,7 +70,7 @@ jobs:
 
     - name: Verify Visual Studio 2022 installation
       run: |
-        $vswherePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $vswherePath = "${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\Installer\\vswhere.exe"
         if (-Not (Test-Path $vswherePath)) {
           Write-Error "vswhere.exe not found. Visual Studio 2022 might not be installed."
           exit 1
@@ -97,9 +94,9 @@ jobs:
 
     - name: Find VSIXInstaller
       run: |
-        $vswherePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
+        $vswherePath = "${env:ProgramFiles(x86)}\\Microsoft Visual Studio\\Installer\\vswhere.exe"
         $vsInstallPath = & $vswherePath -latest -version "[17.0,18.0)" -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
-        $vsixInstallerPath = Join-Path -Path $vsInstallPath -ChildPath "Common7\IDE\VSIXInstaller.exe"
+        $vsixInstallerPath = Join-Path -Path $vsInstallPath -ChildPath "Common7\\IDE\\VSIXInstaller.exe"
         if (-Not (Test-Path $vsixInstallerPath)) {
           Write-Error "VSIXInstaller.exe not found."
           exit 1
@@ -120,12 +117,12 @@ jobs:
         
         # Paths to check for Qt configuration
         $configPaths = @(
-            "$env:APPDATA\QtProject\qtcreator\qtversion.xml",
-            "$env:LOCALAPPDATA\QtProject\qtcreator\qtversion.xml"
+            "$env:APPDATA\\QtProject\\qtcreator\\qtversion.xml",
+            "$env:LOCALAPPDATA\\QtProject\\qtcreator\\qtversion.xml"
         )
         
         # Path to qmake.exe
-        $qmakePath = Join-Path $qtPath "bin\qmake.exe"
+        $qmakePath = Join-Path $qtPath "bin\\qmake.exe"
         
         $configFound = $false
         foreach ($configPath in $configPaths) {
@@ -156,35 +153,32 @@ jobs:
             Write-Host "Expected paths: $($configPaths -join ', ')"
             Write-Host "Ensure that Qt Creator is installed and has been run at least once to generate configuration files."
             exit 1
-        }
-
 
     - name: Setup and Execute Build
       shell: cmd
       run: |
-            echo "Current directory: %cd%"
-            set OPENTWIN_DEV_ROOT=%cd%\OpenTwin
-            set DEVENV_ROOT_2022=%DEVENV_PATH%
-            set OPENTWIN_THIRDPARTY_ROOT=%cd%\ThirdParty
-            echo "OPENTWIN_DEV_ROOT=%OPENTWIN_DEV_ROOT%"
-            echo "DEVENV_ROOT_2022=%DEVENV_ROOT_2022%"
-            echo "OPENTWIN_THIRDPARTY_ROOT=%OPENTWIN_THIRDPARTY_ROOT%"
-            echo "Checking directories and necessary files..."
-            echo "OpenTwin directory: %OPENTWIN_DEV_ROOT%"
-            dir %OPENTWIN_DEV_ROOT%
-            echo "ThirdParty directory: %OPENTWIN_THIRDPARTY_ROOT%"
-            dir %OPENTWIN_THIRDPARTY_ROOT%
-            echo "Visual Studio 2022 directory: %DEVENV_ROOT_2022%"
-            dir "%DEVENV_ROOT_2022%"
-            echo "Checking if BuildAll.bat exists..."
-            echo "Starting BuildAll.bat..."
-            call %OPENTWIN_DEV_ROOT%\Scripts\BuildAndTest\BuildAll.bat 
-            echo "All checks passed."
-    
-    
+        echo "Current directory: %cd%"
+        set OPENTWIN_DEV_ROOT=%cd%\\OpenTwin
+        set DEVENV_ROOT_2022=%DEVENV_PATH%
+        set OPENTWIN_THIRDPARTY_ROOT=%cd%\\ThirdParty
+        echo "OPENTWIN_DEV_ROOT=%OPENTWIN_DEV_ROOT%"
+        echo "DEVENV_ROOT_2022=%DEVENV_ROOT_2022%"
+        echo "OPENTWIN_THIRDPARTY_ROOT=%OPENTWIN_THIRDPARTY_ROOT%"
+        echo "Checking directories and necessary files..."
+        echo "OpenTwin directory: %OPENTWIN_DEV_ROOT%"
+        dir %OPENTWIN_DEV_ROOT%
+        echo "ThirdParty directory: %OPENTWIN_THIRDPARTY_ROOT%"
+        dir %OPENTWIN_THIRDPARTY_ROOT%
+        echo "Visual Studio 2022 directory: %DEVENV_ROOT_2022%"
+        dir "%DEVENV_ROOT_2022%"
+        echo "Checking if BuildAll.bat exists..."
+        echo "Starting BuildAll.bat..."
+        call %OPENTWIN_DEV_ROOT%\\Scripts\\BuildAndTest\\BuildAll.bat 
+        echo "All checks passed."
+
     - name: Upload build log summary artifact
       if: always()
       uses: actions/upload-artifact@v2
       with:
-            name: build-log-summary
-            path: ${{ github.workspace }}\OpenTwin\Scripts\BuildAndTest\buildLog_Summary.txt
+        name: build-log-summary
+        path: ${{ github.workspace }}\\OpenTwin\\Scripts\\BuildAndTest\\buildLog_Summary.txt
