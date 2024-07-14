@@ -72,7 +72,8 @@ jobs:
             $newVersion = $qtConfig.CreateElement("qtversion")
             $newVersion.SetAttribute("Id", "qt." + $qtVersionName)
             $newVersion.SetAttribute("Name", $qtVersionName)
-            $newVersion.SetAttribute("QMakePath", Join-Path $qtPath "bin\qmake.exe")
+            $qmakePath = Join-Path $qtPath "bin\qmake.exe"
+            $newVersion.SetAttribute("QMakePath", $qmakePath)
         
             # Append the new version to the qtversions node
             $qtConfig.qtcreator.qtversions.AppendChild($newVersion) | Out-Null
