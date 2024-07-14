@@ -57,9 +57,11 @@ jobs:
         Start-Process -FilePath $vsixInstallerPath -ArgumentList "/q", "qt-vsaddin-msvc2022-3.0.2.vsix" -NoNewWindow -Wait
 
     - name: Configure Qt Version
+      env:
+        QT_PATH: ${{ github.workspace }}\ThirdParty\Qt\6.6.1\msvc2019_64
       run: |
         $qtVersionName = "6.6.1"
-        $qtPath = "X:\OpenTwin\Repo\Third_Party_Libraries\Qt\6.6.1\msvc2019_64"
+        $qtPath = "${env:QT_PATH}"
         
         # Paths to check for Qt configuration
         $configPaths = @(
