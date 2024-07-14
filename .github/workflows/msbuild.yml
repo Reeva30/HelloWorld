@@ -16,13 +16,12 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Step 2: Check out the third-party repository
     - name: Check out the third-party repository
       uses: actions/checkout@v4
       with:
         repository: OT-OpenTwin/ThirdParty
         path: ThirdParty
-        fetch-depth: 1  # Limit fetching to the last commit
+        fetch-depth: 1
 
     - name: Verify Visual Studio 2022 installation
       run: |
@@ -106,4 +105,7 @@ jobs:
         
         if (-Not $configFound) {
             Write-Error "Qt configuration file not found in expected paths."
+            Write-Host "Expected paths: $($configPaths -join ', ')"
+            Write-Host "Ensure that Qt Creator is installed and has been run at least once to generate configuration files."
+            exit 1
         }
