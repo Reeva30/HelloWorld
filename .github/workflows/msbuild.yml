@@ -16,6 +16,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
+    # Step 2: Check out the third-party repository
+    - name: Check out the third-party repository
+      uses: actions/checkout@v2
+      with:
+        repository: OT-OpenTwin/ThirdParty
+        path: ThirdParty
+        fetch-depth: 1  # Limit fetching to the last commit
+
     - name: Verify Visual Studio 2022 installation
       run: |
         $vswherePath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
