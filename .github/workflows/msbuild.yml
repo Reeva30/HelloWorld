@@ -61,18 +61,39 @@ jobs:
         $qtVersionName = "6.6.1"
         $qtPath = "X:\OpenTwin\Repo\Third_Party_Libraries\Qt\6.6.1\msvc2019_64"
         
+        # Paths to check for Qt configuration
+        $configPaths = @(
+            "$env:APPDATA\QtProject\qtcreator\qtversion.xml",
+            "$env:LOCALAPPDATA\QtProject\qtcreator\qtversion.xml"
+        )
+        
         # Path to qmake.exe
         $qmakePath = Join-Path $qtPath "bin\qmake.exe"
         
-        # Registry path for Qt versions (example path, adjust as necessary)
-        $registryPath = "HKCU:\Software\QtProject\QtVersions"
-
-        # Create the registry key if it doesn't exist
-        if (-Not (Test-Path $registryPath)) {
-            New-Item -Path $registryPath -Force
+        $configFound = $false
+        foreach ($configPath in $configPaths) {
+            if (Test-Path $configPath) {
+                $configFound = $true
+                [xml]$qtConfig = Get-Content $configPath
+                
+                # Create a new qtversion element if it doesn't exist
+                if (-Not $qtConfig.qtcreator.qtversions.qtversion) {
+                    $qtConfig.qtcreator.AppendChild($qtConfig.CreateElement("qtversions")) | Out-Null
+                }
+                
+                $newVersion = $qtConfig.CreateElement("qtversion")
+                $newVersion.SetAttribute("Id", "qt." + $qtVersionName)
+                $newVersion.SetAttribute("Name", $qtVersionName)
+                $newVersion.SetAttribute("QMakePath", $qmakePath)
+                
+                # Append the new version to the qtversions node
+                $qtConfig.qtcreator.qtversions.AppendChild($newVersion) | Out-Null
+                $qtConfig.Save($configPath)
+                
+                Write-Host "Configured Qt version $qtVersionName with path $qtPath in $configPath"
+            }
         }
-
-        # Set the Qt version in the registry
-        Set-ItemProperty -Path $registryPath -Name $qtVersionName -Value $qmakePath
-
-        Write-Host "Configured Qt version $qtVersionName with path $qtPath in registry"
+        
+        if (-Not $configFound) {
+            Write-Error "Qt configuration file not found in expected paths."
+        }
