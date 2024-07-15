@@ -152,7 +152,7 @@ jobs:
             Write-Error "Qt configuration file not found in expected paths."
             Write-Host "Expected paths: $($configPaths -join ', ')"
             Write-Host "Ensure that Qt Creator is installed and has been run at least once to generate configuration files."
-            exit 1
+            exit 1}
 
     - name: Setup and Execute Build
       shell: cmd
