@@ -35,10 +35,15 @@ jobs:
     - name: Set up MSBuild
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Find Qt Installation Path
+      run: |
+        $qtPath = (Get-ChildItem -Directory 'C:\Program Files\Qt\' | Select-Object -ExpandProperty FullName)
+        echo "QT_PATH=$qtPath" >> $GITHUB_ENV
+
     - name: Verify Qt Installation
       run: |
         echo "Verifying Qt installation"
-        dir "C:\Qt"
+        dir "${{ env.QT_PATH }}"
 
     - name: Build Project
       env:
