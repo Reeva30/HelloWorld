@@ -16,22 +16,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install Chocolatey
-      run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force; `
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
-        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-
     - name: Install Qt
-      run: |
-        choco install qt5 --version=5.15.2 -y
+      uses: jurplel/install-qt-action@v2
+      with:
+        version: '5.15.2'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
 
     - name: Set up MSBuild
       uses: microsoft/setup-msbuild@v1.0.2
 
     - name: Build Project
       env:
-        QT_DIR: C:\Qt\5.15.2\msvc2019_64
+        QT_DIR: ${{ env.QT_BASE }}/5.15.2/msvc2019_64
       run: |
-        $env:Path += ";$env:QT_DIR\bin"
+        $env:Path += ";${{ env.QT_DIR }}\bin"
         devenv.exe <your_solution_file>.sln /Build "Release"
