@@ -30,7 +30,7 @@ jobs:
     - name: Verify Qt Installation
       run: |
         echo "Verifying Qt installation"
-        dir ${{ env.QT_BASE }}/5.15.2/msvc2019_64
+        dir ${{ env.Qt5_15_2_dir }}
 
     - name: Build Project
       env:
