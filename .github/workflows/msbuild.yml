@@ -27,6 +27,11 @@ jobs:
     - name: Set up MSBuild
       uses: microsoft/setup-msbuild@v1.0.2
 
+    - name: Verify Qt Installation
+      run: |
+        echo "Verifying Qt installation"
+        dir ${{ env.QT_BASE }}/5.15.2/msvc2019_64
+
     - name: Build Project
       env:
         QT_DIR: ${{ env.QT_BASE }}/5.15.2/msvc2019_64
