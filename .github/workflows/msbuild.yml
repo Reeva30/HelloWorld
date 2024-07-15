@@ -16,38 +16,33 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install Chocolatey
-      run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force; `
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
-        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-
     - name: Install Qt
-      run: |
-        choco install qtcreator -y
-        choco install qt5-default -y
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: '5.15.2'
+        host: 'windows'
+        target: 'desktop'
+        arch: 'win64_msvc2019_64'
+        modules: 'qtcharts qtwebengine'
+        archives: 'qtbase qtsvg'
+        set-env: 'true'
 
     - name: Install Qt Visual Studio Tools
       run: |
         Invoke-WebRequest -Uri "https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix" -OutFile "qt-vsaddin-msvc2022.vsix"
-        & "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VSIXInstaller.exe" qt-vsaddin-msvc2022.vsix
+        Start-Process -Wait -FilePath "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VSIXInstaller.exe" -ArgumentList "qt-vsaddin-msvc2022.vsix"
 
     - name: Set up MSBuild
       uses: microsoft/setup-msbuild@v1.0.2
 
-    - name: Find Qt Installation Path
-      run: |
-        $qtPath = (Get-ChildItem -Directory 'C:\Program Files\Qt\' | Select-Object -ExpandProperty FullName)
-        echo "QT_PATH=$qtPath" >> $GITHUB_ENV
-
     - name: Verify Qt Installation
       run: |
         echo "Verifying Qt installation"
-        dir "${{ env.QT_PATH }}"
+        dir "${{ env.QT_ROOT }}/msvc2019_64"
 
     - name: Build Project
       env:
-        QT_DIR: C:\Qt\5.15.2\msvc2019_64
+        QT_DIR: ${{ env.QT_ROOT }}/msvc2019_64
       run: |
         $env:Path += ";${{ env.QT_DIR }}\bin"
         devenv.exe <your_solution_file>.sln /Build "Release"
