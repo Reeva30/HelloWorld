@@ -24,10 +24,6 @@ jobs:
     - name: Install Chocolatey
       run: Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-    - name: Install Qt Visual Studio Tools
-      run: |
-        choco install qtvisualstudiotools --pre || echo "Qt Visual Studio Tools installation failed"
-
     - name: Install Qt
       run: |
         choco install qt --version=6.2.3
@@ -37,6 +33,14 @@ jobs:
         $qtPath = "C:\Qt\6.2.3\msvc2019_64"
         [Environment]::SetEnvironmentVariable("QTDIR", $qtPath, "Machine")
         [Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";$qtPath\bin", "Machine")
+
+    - name: Download Qt Visual Studio Tools
+      run: |
+        Invoke-WebRequest -Uri "https://download.qt.io/official_releases/vsaddin/2.7.2/qt-vsaddin-msvc2019-2.7.2.vsix" -OutFile "C:\vsaddin.vsix"
+
+    - name: Install Qt Visual Studio Tools
+      run: |
+        & "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe" /quiet /install "C:\vsaddin.vsix"
 
     - name: Configure Qt Add-in
       run: |
