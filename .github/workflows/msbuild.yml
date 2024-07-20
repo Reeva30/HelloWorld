@@ -58,12 +58,13 @@ jobs:
         } else {
           throw "VSIXInstaller.exe not found."
         }
-        echo "::set-output name=vsixPath::$vsixPath"
+        echo "VSIXInstaller path: $vsixPath"
+        echo "VSIX_PATH=$vsixPath" >> $env:GITHUB_ENV
 
     - name: Install Qt Visual Studio Add-in
       run: |
-        $vsixInstallerPath = "${{ steps.find-vsix.outputs.vsixPath }}"
-        Start-Process -FilePath $vsixInstallerPath -ArgumentList "/quiet", "/logFile:vsixinstall.log", "C:\\QtVsAddin.vsix" -NoNewWindow -Wait
+        echo "Using VSIXInstaller path: $env:VSIX_PATH"
+        Start-Process -FilePath $env:VSIX_PATH -ArgumentList "/quiet", "/logFile:vsixinstall.log", "C:\\QtVsAddin.vsix" -NoNewWindow -Wait
 
     - name: Find devenv.com Path
       id: find-devenv
@@ -78,12 +79,13 @@ jobs:
         } else {
           throw "devenv.com not found."
         }
-        echo "::set-output name=devenvPath::$devenvPath"
+        echo "devenv path: $devenvPath"
+        echo "DEVENV_PATH=$devenvPath" >> $env:GITHUB_ENV
 
     - name: Configure Qt Add-in
       run: |
-        $devenvPath = "${{ steps.find-devenv.outputs.devenvPath }}"
-        & $devenvPath /command "QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;"
+        echo "Using devenv path: $env:DEVENV_PATH"
+        & $env:DEVENV_PATH /command "QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;"
 
     - name: Build the project using msbuild
       run: |
