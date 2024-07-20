@@ -22,7 +22,10 @@ jobs:
         arch: x64
 
     - name: Install Chocolatey
-      run: Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
     - name: Download Qt Online Installer 
       run: |
@@ -42,13 +45,30 @@ jobs:
       run: |
         Invoke-WebRequest -Uri "https://download.qt.io/official_releases/vsaddin/2.6.0/qt-vsaddin-msvc2019-2.6.0.vsix" -OutFile "C:\\QtVsAddin.vsix"
 
+    - name: Verify VSIXInstaller.exe Path
+      id: find-vsix
+      run: |
+        $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe"
+        if (-Not (Test-Path $vsixPath)) {
+          $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\IDE\\VSIXInstaller.exe"
+        }
+        if (-Not (Test-Path $vsixPath)) {
+          $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\VSIXInstaller.exe"
+        }
+        if (-Not (Test-Path $vsixPath)) {
+          throw "VSIXInstaller.exe not found."
+        }
+        echo "::set-output name=vsixPath::$vsixPath"
+
     - name: Install Qt Visual Studio Add-in
       run: |
-        Start-Process -FilePath "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe" -ArgumentList "/quiet", "/logFile:vsixinstall.log", "C:\\QtVsAddin.vsix" -NoNewWindow -Wait
+        $vsixInstallerPath = "${{ steps.find-vsix.outputs.vsixPath }}"
+        Start-Process -FilePath $vsixInstallerPath -ArgumentList "/quiet", "/logFile:vsixinstall.log", "C:\\QtVsAddin.vsix" -NoNewWindow -Wait
 
     - name: Configure Qt Add-in
       run: |
-        & "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com" /command "QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;"
+        $devenvPath = "${{ steps.find-vsix.outputs.vsixPath }}" -replace "VSIXInstaller.exe", "devenv.com"
+        & $devenvPath /command "QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;"
 
     - name: Build the project using msbuild
       run: |
