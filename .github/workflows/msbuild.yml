@@ -44,11 +44,11 @@ jobs:
 
     - name: Install Qt Visual Studio Add-in
       run: |
-        Start-Process -FilePath "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\VSIXInstaller.exe" -ArgumentList "/quiet", "/logFile:vsixinstall.log", "C:\\QtVsAddin.vsix" -NoNewWindow -Wait
+        Start-Process -FilePath "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe" -ArgumentList "/quiet", "/logFile:vsixinstall.log", "C:\\QtVsAddin.vsix" -NoNewWindow -Wait
 
     - name: Configure Qt Add-in
       run: |
-        & "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\devenv.com" /command "QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;"
+        & "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com" /command "QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;"
 
     - name: Build the project using msbuild
       run: |
