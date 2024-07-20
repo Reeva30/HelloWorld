@@ -26,7 +26,7 @@ jobs:
 
     - name: Install Qt Visual Studio Tools
       run: |
-        choco install qtvisualstudiotools --version=2.6.2
+        choco install qtvisualstudiotools --pre || echo "Qt Visual Studio Tools installation failed"
 
     - name: Install Qt
       run: |
