@@ -24,27 +24,32 @@ jobs:
     - name: Install Chocolatey
       run: Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
+    - name: Download Qt Online Installer
+      run: |
+        Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x86-4.2.0-online.exe" -OutFile "C:\\QtInstaller.exe"
+
     - name: Install Qt
-      run: choco install qt --version=6.2.3
+      run: |
+        Start-Process -FilePath "C:\\QtInstaller.exe" -ArgumentList "--silent", "--accept-messages", "--confirm-command", "install", "--auto-answer", "yes", "--default-answer", "yes", "--root", "C:\\Qt" -NoNewWindow -Wait
 
     - name: Set up Qt environment variables
       run: |
-        $qtPath = "C:\Qt\6.2.3\msvc2019_64"
+        $qtPath = "C:\\Qt\\6.2.4\\msvc2019_64"
         [Environment]::SetEnvironmentVariable("QTDIR", $qtPath, "Machine")
-        [Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";$qtPath\bin", "Machine")
+        [Environment]::SetEnvironmentVariable("PATH", $env:PATH + ";$qtPath\\bin", "Machine")
 
     - name: Download Qt Visual Studio Add-in
       run: |
-        Invoke-WebRequest -Uri "https://download.qt.io/official_releases/vsaddin/2.6.0/qt-vsaddin-msvc2019-2.6.0.vsix" -OutFile "C:\QtVsAddin.vsix"
+        Invoke-WebRequest -Uri "https://download.qt.io/official_releases/vsaddin/2.6.0/qt-vsaddin-msvc2019-2.6.0.vsix" -OutFile "C:\\QtVsAddin.vsix"
 
     - name: Install Qt Visual Studio Add-in
       run: |
-        "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\VSIXInstaller.exe" /quiet /logFile:vsixinstall.log C:\QtVsAddin.vsix
+        Start-Process -FilePath "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\VSIXInstaller.exe" -ArgumentList "/quiet", "/logFile:vsixinstall.log", "C:\\QtVsAddin.vsix" -NoNewWindow -Wait
 
     - name: Configure Qt Add-in
       run: |
-        & "C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\devenv.com" /command "QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;"
+        & "C:\\Program Files (x86)\\Microsoft Visual Studio\\2019\\Community\\Common7\\IDE\\devenv.com" /command "QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;"
 
     - name: Build the project using msbuild
       run: |
-        msbuild /p:Configuration=Release /p:Platform=x64 path\to\your\solution.sln
+        msbuild /p:Configuration=Release /p:Platform=x64 path\\to\\your\\solution.sln
