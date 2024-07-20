@@ -24,9 +24,9 @@ jobs:
     - name: Install Chocolatey
       run: Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
-    - name: Download Qt Online Installer
+    - name: Download Qt Online Installer 
       run: |
-        Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x86-4.2.0-online.exe" -OutFile "C:\\QtInstaller.exe"
+        Invoke-WebRequest -Uri "https://download.qt.io/official_releases/online_installers/qt-unified-windows-x64-online.exe" -OutFile "C:\\QtInstaller.exe"
 
     - name: Install Qt
       run: |
