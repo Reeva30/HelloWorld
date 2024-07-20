@@ -85,10 +85,9 @@ jobs:
     - name: Configure Qt Add-in
       run: |
         echo "Using devenv path: $env:DEVENV_PATH"
-        try {
-          & $env:DEVENV_PATH /command "QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;"
-        } catch {
-          Write-Error "Failed to execute devenv.com command: $_"
+        Start-Process -FilePath $env:DEVENV_PATH -ArgumentList "/command", "`"QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;`"", "/Log", "devenv.log" -NoNewWindow -Wait -PassThru | Wait-Process -Timeout 300
+        if ($LASTEXITCODE -ne 0) {
+          Write-Error "Failed to execute devenv.com command. Check devenv.log for details."
         }
 
     - name: Build the project using msbuild
