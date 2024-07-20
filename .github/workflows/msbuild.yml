@@ -45,17 +45,17 @@ jobs:
       run: |
         Invoke-WebRequest -Uri "https://download.qt.io/official_releases/vsaddin/2.6.0/qt-vsaddin-msvc2019-2.6.0.vsix" -OutFile "C:\\QtVsAddin.vsix"
 
-    - name: Verify VSIXInstaller.exe Path
+    - name: Find VSIXInstaller.exe Path
       id: find-vsix
       run: |
-        $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe"
-        if (-Not (Test-Path $vsixPath)) {
+        $vsixPath = ""
+        if (Test-Path "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe") {
+          $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\VSIXInstaller.exe"
+        } elseif (Test-Path "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\IDE\\VSIXInstaller.exe") {
           $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\IDE\\VSIXInstaller.exe"
-        }
-        if (-Not (Test-Path $vsixPath)) {
+        } elseif (Test-Path "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\VSIXInstaller.exe") {
           $vsixPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\VSIXInstaller.exe"
-        }
-        if (-Not (Test-Path $vsixPath)) {
+        } else {
           throw "VSIXInstaller.exe not found."
         }
         echo "::set-output name=vsixPath::$vsixPath"
@@ -65,9 +65,24 @@ jobs:
         $vsixInstallerPath = "${{ steps.find-vsix.outputs.vsixPath }}"
         Start-Process -FilePath $vsixInstallerPath -ArgumentList "/quiet", "/logFile:vsixinstall.log", "C:\\QtVsAddin.vsix" -NoNewWindow -Wait
 
+    - name: Find devenv.com Path
+      id: find-devenv
+      run: |
+        $devenvPath = ""
+        if (Test-Path "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com") {
+          $devenvPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
+        } elseif (Test-Path "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\IDE\\devenv.com") {
+          $devenvPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Professional\\Common7\\IDE\\devenv.com"
+        } elseif (Test-Path "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.com") {
+          $devenvPath = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\Common7\\IDE\\devenv.com"
+        } else {
+          throw "devenv.com not found."
+        }
+        echo "::set-output name=devenvPath::$devenvPath"
+
     - name: Configure Qt Add-in
       run: |
-        $devenvPath = "${{ steps.find-vsix.outputs.vsixPath }}" -replace "VSIXInstaller.exe", "devenv.com"
+        $devenvPath = "${{ steps.find-devenv.outputs.devenvPath }}"
         & $devenvPath /command "QtVsTools.PackageUtilities, Initialize;QTVSADDIN_VERSION=6.2.3;"
 
     - name: Build the project using msbuild
