@@ -6,6 +6,7 @@ env:
   PROJECT_FILE_PATH: HelloWorld.vcxproj
   BUILD_CONFIGURATION: Debug|x64 
   DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
+  QT_DIR: C:\Qt\5.15.2\msvc2019_64
 
 jobs:
   build:
@@ -20,9 +21,17 @@ jobs:
     - name: Set up Qt
       run: |
         choco install qt5-default
-        echo "C:\Qt\5.15.2\msvc2019_64\bin" >> $env:GITHUB_PATH
+        echo "$env:QT_DIR\bin" >> $env:GITHUB_PATH
+        refreshenv
+
+    - name: Set up MSVC environment
+      shell: cmd
+      run: |
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
 
     - name: Build with Visual Studio
       shell: cmd
       run: |
+        set INCLUDE=%INCLUDE%;%QT_DIR%\include
+        set LIB=%LIB%;%QT_DIR%\lib
         "%DEVENV_PATH%" "%PROJECT_FILE_PATH%" /Build "%BUILD_CONFIGURATION%"
