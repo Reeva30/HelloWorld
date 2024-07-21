@@ -25,6 +25,7 @@ jobs:
     - name: Install Qt
       run: choco install qt5-default --params "/InstallDir:C:\Qt"
 
+
     - name: Set Qt environment variables
       shell: powershell
       run: |
