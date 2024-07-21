@@ -39,13 +39,16 @@ jobs:
       run: dir "${{ github.workspace }}\QT"
 
     - name: List Tools directory contents
-      run: dir "${{ github.workspace }}\QT\QT"
+      run: dir "${{ github.workspace }}\QT\QT\5.15.2"
 
+    - name: List Tools directory contents
+      run: dir "${{ github.workspace }}\QT\QT\Tools"
+      
     - name: List QtCreator directory contents
-      run: dir "${{ github.workspace }}\QT\Tools\QtCreator\bin"
+      run: dir "${{ github.workspace }}\QT\QT\Tools\QtCreator\bin"
 
     - name: Set up Qt environment
-      run: cmd /c "${{ github.workspace }}\QT\Tools\QtCreator\bin\qtenv2.bat"
+      run: cmd /c "${{ github.workspace }}\QT\QT\Tools\QtCreator\bin\qtenv2.bat"
 
     - name: Install CMake
       run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
