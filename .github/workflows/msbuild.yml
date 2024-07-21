@@ -20,7 +20,9 @@ jobs:
 
     - name: Install Chocolatey
       run: |
-        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
     - name: Install Qt
       run: choco install qt5-default --params "/InstallDir:C:\Qt"
@@ -31,7 +33,7 @@ jobs:
         echo "C:\Qt\5.15.2\mingw81_64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         echo "C:\Qt\5.15.2\mingw81_64\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
         echo "C:\Qt\5.15.2\mingw81_64\include" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        [Environment]::SetEnvironmentVariable('QT_DIR', 'C:\Qt\5.15.2\mingw81_64', 'Machine')
+        [Environment]::SetEnvironmentVariable('QTDIR', 'C:\Qt\5.15.2\mingw81_64', 'Machine')
         [Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';C:\Qt\5.15.2\mingw81_64\bin', 'Machine')
 
     - name: Refresh environment variables
@@ -42,12 +44,9 @@ jobs:
 
     - name: Verify Qt installation and paths
       run: |
-        echo %QT_DIR%
+        echo %QTDIR%
         echo %PATH%
         dir C:\Qt\5.15.2\mingw81_64
-        dir C:\Qt\5.15.2\mingw81_64\bin
-        dir C:\Qt\5.15.2\mingw81_64\lib
-        dir C:\Qt\5.15.2\mingw81_64\include
 
     - name: Set up MSVC environment
       shell: cmd
@@ -56,9 +55,9 @@ jobs:
     - name: Build with Visual Studio
       shell: cmd
       run: |
-        set INCLUDE=%QT_DIR%\include;%INCLUDE%
-        set LIB=%QT_DIR%\lib;%LIB%
-        set PATH=%QT_DIR%\bin;%PATH%
+        set INCLUDE=%QTDIR%\include;%INCLUDE%
+        set LIB=%QTDIR%\lib;%LIB%
+        set PATH=%QTDIR%\bin;%PATH%
         echo %INCLUDE%
         echo %LIB%
         echo %PATH%
