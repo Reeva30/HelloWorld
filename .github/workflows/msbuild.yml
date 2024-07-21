@@ -1,12 +1,6 @@
-name: Build Qt C++ Project
+name: Build and Test
 
-on:
-  push:
-    branches:
-      - m
-  pull_request:
-    branches:
-      - m
+on: [push, pull_request]
 
 jobs:
   build:
@@ -16,33 +10,11 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: '5.15.2'
-        host: 'windows'
-        target: 'desktop'
-        arch: 'win64_msvc2019_64'
-        modules: 'qtcharts qtwebengine'
-        archives: 'qtbase qtsvg'
-        set-env: 'true'
-
-    - name: Install Qt Visual Studio Tools
+    - name: Set up Qt
       run: |
-        Invoke-WebRequest -Uri "https://download.qt.io/development_releases/vsaddin/3.0.2/qt-vsaddin-msvc2022-3.0.2.vsix" -OutFile "qt-vsaddin-msvc2022.vsix"
-        Start-Process -Wait -FilePath "C:\Program Files\Microsoft Visual Studio\2022\Community\Common7\IDE\VSIXInstaller.exe" -ArgumentList "qt-vsaddin-msvc2022.vsix"
+        choco install qt5-sdk -y
+        echo "C:\Qt\5.15.2\msvc2019_64\bin" >> $env:GITHUB_PATH
 
-    - name: Set up MSBuild
-      uses: microsoft/setup-msbuild@v1.0.2
-
-    - name: Verify Qt Installation
+    - name: Build with Visual Studio
       run: |
-        echo "Verifying Qt installation"
-        dir "${{ env.QT_ROOT }}/msvc2019_64"
-
-    - name: Build Project
-      env:
-        QT_DIR: ${{ env.QT_ROOT }}/msvc2019_64
-      run: |
-        $env:Path += ";${{ env.QT_DIR }}\bin"
-        devenv.exe <your_solution_file>.sln /Build "Release"
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe" HelloWorldProject.sln /Build "Release|x64"
