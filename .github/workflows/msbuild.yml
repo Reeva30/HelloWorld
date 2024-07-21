@@ -6,6 +6,7 @@ env:
   PROJECT_FILE_PATH: HelloWorld.vcxproj
   BUILD_CONFIGURATION: Debug|x64
   DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
+  QT_MSBUILD: ${{ github.workspace }}\QT\5.15.2\msvc2019_64
 
 jobs:
   build:
@@ -46,6 +47,9 @@ jobs:
     - name: List QT directory contents
       run: dir "${{ github.workspace }}\QT\5.15.2"
 
+    - name: List QT directory contents
+      run: dir "${{ github.workspace }}\QT\5.15.2\msvc2019_64"
+      
     - name: List Tools directory contents
       run: dir "${{ github.workspace }}\QT\Tools"
 
@@ -59,6 +63,7 @@ jobs:
         echo "QTDIR=${{ github.workspace }}\QT\5.15.2" >> $GITHUB_ENV
         echo "QT_PLUGIN_PATH=${{ github.workspace }}\QT\5.15.2\plugins" >> $GITHUB_ENV
         echo "QML2_IMPORT_PATH=${{ github.workspace }}\QT\5.15.2\qml" >> $GITHUB_ENV
+        echo "QtMsBuild=${{ github.workspace }}\QT\5.15.2\msvc2019_64" >> $GITHUB_ENV
         echo "Path=${{ github.workspace }}\QT\5.15.2\bin;$Env:Path" >> $GITHUB_ENV
 
     - name: Build the solution with devenv.com
