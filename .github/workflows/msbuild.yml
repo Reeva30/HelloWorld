@@ -44,7 +44,7 @@ jobs:
         aqtversion: '==3.1.*'
 
     - name: Refresh environment variables
-      shell: powershell
+      shell: cmd
       run: |
         refreshenv
         
