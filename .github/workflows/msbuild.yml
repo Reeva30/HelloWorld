@@ -39,7 +39,7 @@ jobs:
       run: dir "${{ github.workspace }}\QT"
 
     - name: List Tools directory contents
-      run: dir "${{ github.workspace }}\QT\Tools"
+      run: dir "${{ github.workspace }}\QT\QT"
 
     - name: List QtCreator directory contents
       run: dir "${{ github.workspace }}\QT\Tools\QtCreator\bin"
