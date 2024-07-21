@@ -3,7 +3,7 @@ name: Build and Test
 on: [push, pull_request]
 
 env:
-  PROJECT_FILE_PATH: HelloWorld.vcxproj
+  PROJECT_FILE_PATH: HelloWorld.sln
   BUILD_CONFIGURATION: Debug|x64
   DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
   QT_DIR: C:\Qt\5.15.2\mingw81_64
@@ -50,8 +50,6 @@ jobs:
         echo %QTDIR%
         echo %PATH%
         dir C:\Qt\5.15.2\mingw81_64
-        dir C:\Qt  
-
 
     - name: Set up MSVC environment
       shell: cmd
