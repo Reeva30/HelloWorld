@@ -54,7 +54,7 @@ jobs:
       run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
 
     - name: Configure CMake
-      run: cmake -B build -S . -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH="${{ github.workspace }}\QT\5.15.2\msvc2019_64"
+      run: cmake -B build -S . -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH="${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64"
 
     - name: Build with CMake
       run: cmake --build build --config Debug
