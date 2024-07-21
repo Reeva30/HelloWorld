@@ -2,6 +2,11 @@ name: Build and Test
 
 on: [push, pull_request]
 
+env:
+  PROJECT_FILE_PATH: HelloWorld.vcxproj
+  BUILD_CONFIGURATION: Debug|x64
+  DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
+
 jobs:
   build:
     runs-on: windows-latest
@@ -35,40 +40,36 @@ jobs:
         tools-only: 'false'
         aqtversion: '==3.1.*'
 
-    - name: List QT directory contents
+    - name: List root directory contents
       run: dir "${{ github.workspace }}\QT"
 
-    - name: List Tools directory contents
-      run: dir "${{ github.workspace }}\QT\QT\bin"
+    - name: List QT directory contents
+      run: dir "${{ github.workspace }}\QT\5.15.2"
 
     - name: List Tools directory contents
-      run: dir "${{ github.workspace }}\QT\Qt\5.15.2\msvc2019_64"
-      
-    - name: List Tools directory contents
-      run: dir "${{ github.workspace }}\QT\QT\Tools"
-      
+      run: dir "${{ github.workspace }}\QT\Tools"
+
     - name: List QtCreator directory contents
-      run: dir "${{ github.workspace }}\QT\QT\Tools\QtCreator\bin"
-
-
+      run: dir "${{ github.workspace }}\QT\Tools\QtCreator\bin"
 
     - name: Set up Qt environment variables
       run: |
         echo "Setting up Qt environment variables"
-        echo "QT_HOME=${{ github.workspace }}\QT\QT" >> $GITHUB_ENV
-        echo "QTDIR=${{ github.workspace }}\QT\QT" >> $GITHUB_ENV
-        echo "QT_PLUGIN_PATH=${{ github.workspace }}\QT\QT\5.15.2\plugins" >> $GITHUB_ENV
-        echo "QML2_IMPORT_PATH=${{ github.workspace }}\QT\QT\5.15.2\qml" >> $GITHUB_ENV
-        echo "Path=${{ github.workspace }}\QT\QT\5.15.2\bin;$Env:Path" >> $GITHUB_ENV
-
-    - name: Install CMake
-      run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+        echo "QT_HOME=${{ github.workspace }}\QT" >> $GITHUB_ENV
+        echo "QTDIR=${{ github.workspace }}\QT\5.15.2" >> $GITHUB_ENV
+        echo "QT_PLUGIN_PATH=${{ github.workspace }}\QT\5.15.2\plugins" >> $GITHUB_ENV
+        echo "QML2_IMPORT_PATH=${{ github.workspace }}\QT\5.15.2\qml" >> $GITHUB_ENV
+        echo "Path=${{ github.workspace }}\QT\5.15.2\bin;$Env:Path" >> $GITHUB_ENV
 
     - name: Install Visual Studio 2022 Build Tools
       run: choco install visualstudio2022buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional"
 
-    - name: Configure CMake
-      run: cmake -B build -S . -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH="${{ github.workspace }}\QT\5.15.2\msvc2019_64"
+    - name: Build the solution with devenv.com
+      run: |
+        echo "Building the solution using devenv.com"
+        &"${{ env.DEVENV_PATH }}" "${{ github.workspace }}\${{ env.PROJECT_FILE_PATH }}" /Build "${{ env.BUILD_CONFIGURATION }}"
 
-    - name: Build with CMake
-      run: cmake --build build --config Debug
+    - name: Run tests
+      run: |
+        echo "Running tests using devenv.com"
+        &"${{ env.DEVENV_PATH }}" "${{ github.workspace }}\${{ env.PROJECT_FILE_PATH }}" /RunTests
