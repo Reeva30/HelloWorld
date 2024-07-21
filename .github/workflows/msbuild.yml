@@ -24,7 +24,6 @@ jobs:
       run: |
         choco install qt5-default --params "/InstallDir:C:\Qt"
         echo "C:\Qt\5.15.2\msvc2019_64\bin" >> $env:GITHUB_PATH
-        refreshenv
 
     - name: Set up MSVC environment
       shell: cmd
