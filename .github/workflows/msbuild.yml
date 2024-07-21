@@ -21,21 +21,28 @@ jobs:
     - name: Install Chocolatey
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-
-    - name: Set up Qt
+    - name: Install Qt
       run: |
         choco install qt5-default --params "/InstallDir:C:\Qt"
+    - name: Set Qt environment variables
+      run: |
         echo "C:\Qt\5.15.2\msvc2019_64\bin" >> $env:GITHUB_PATH
-
+        echo "C:\Qt\5.15.2\msvc2019_64\lib" >> $env:GITHUB_PATH
+        echo "C:\Qt\5.15.2\msvc2019_64\include" >> $env:GITHUB_PATH
+        setx QT_DIR "C:\Qt\5.15.2\msvc2019_64"
+    - name: Refresh environment variables
+      shell: powershell
+      run: |
+        Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
+        refreshenv
     - name: Set up MSVC environment
       shell: cmd
       run: |
-        refreshenv
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
-
     - name: Build with Visual Studio
       shell: cmd
       run: |
         set INCLUDE=%INCLUDE%;C:\Qt\5.15.2\msvc2019_64\include
         set LIB=%LIB%;C:\Qt\5.15.2\msvc2019_64\lib
+        set PATH=%PATH%;C:\Qt\5.15.2\msvc2019_64\bin
         "%DEVENV_PATH%" "%PROJECT_FILE_PATH%" /Build "%BUILD_CONFIGURATION%"
