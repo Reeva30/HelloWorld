@@ -35,6 +35,15 @@ jobs:
         tools-only: 'false'
         aqtversion: '==3.1.*'
 
+    - name: List QT directory contents
+      run: dir "${{ github.workspace }}\QT"
+
+    - name: List Tools directory contents
+      run: dir "${{ github.workspace }}\QT\Tools"
+
+    - name: List QtCreator directory contents
+      run: dir "${{ github.workspace }}\QT\Tools\QtCreator\bin"
+
     - name: Set up Qt environment
       run: cmd /c "${{ github.workspace }}\QT\Tools\QtCreator\bin\qtenv2.bat"
 
