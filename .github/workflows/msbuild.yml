@@ -16,7 +16,7 @@ jobs:
       uses: actions/checkout@v4
       with:
         ref: m
-        
+
     - name: Install Chocolatey
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
@@ -27,11 +27,11 @@ jobs:
     - name: Set Qt environment variables
       shell: powershell
       run: |
-        echo "C:\Qt\5.15.2\msvc2019_64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\Qt\5.15.2\msvc2019_64\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\Qt\5.15.2\msvc2019_64\include" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        [Environment]::SetEnvironmentVariable('QT_DIR', 'C:\Qt\5.15.2\msvc2019_64', 'Machine')
-        [Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';C:\Qt\5.15.2\msvc2019_64\bin', 'Machine')
+        echo "C:\Qt\5.15.2\mingw81_64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "C:\Qt\5.15.2\mingw81_64\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "C:\Qt\5.15.2\mingw81_64\include" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        [Environment]::SetEnvironmentVariable('QT_DIR', 'C:\Qt\5.15.2\mingw81_64', 'Machine')
+        [Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';C:\Qt\5.15.2\mingw81_64\bin', 'Machine')
 
     - name: Refresh environment variables
       shell: powershell
@@ -43,7 +43,6 @@ jobs:
       run: |
         echo %QT_DIR%
         echo %PATH%
-        dir C:\Qt\5.15.2
         dir C:\Qt\5.15.2\mingw81_64
 
     - name: Set up MSVC environment
@@ -53,9 +52,9 @@ jobs:
     - name: Build with Visual Studio
       shell: cmd
       run: |
-        set INCLUDE=%INCLUDE%;C:\Qt\5.15.2\msvc2019_64\include
-        set LIB=%LIB%;C:\Qt\5.15.2\msvc2019_64\lib
-        set PATH=%PATH%;C:\Qt\5.15.2\msvc2019_64\bin
+        set INCLUDE=%INCLUDE%;C:\Qt\5.15.2\mingw81_64\include
+        set LIB=%LIB%;C:\Qt\5.15.2\mingw81_64\lib
+        set PATH=%PATH%;C:\Qt\5.15.2\mingw81_64\bin
         echo %INCLUDE%
         echo %LIB%
         echo %PATH%
