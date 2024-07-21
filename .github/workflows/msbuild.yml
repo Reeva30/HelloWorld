@@ -66,6 +66,7 @@ jobs:
         echo "QTDIR=${{ github.workspace }}\QT\5.15.2" >> $GITHUB_ENV
         echo "QT_PLUGIN_PATH=${{ github.workspace }}\QT\5.15.2\plugins" >> $GITHUB_ENV
         echo "QML2_IMPORT_PATH=${{ github.workspace }}\QT\5.15.2\qml" >> $GITHUB_ENV
+        echo "QTDIR=${{ github.workspace }}/DemoCI/QTMSBuild" >> $GITHUB_ENV
         echo "QtMsBuild=${{ github.workspace }}/DemoCI/QTMSBuild" >> $GITHUB_ENV
         echo "Path=${{ github.workspace }}\QT\5.15.2\bin;${{ github.workspace }}/DemoCI/QTMSBuild;$Env:Path" >> $GITHUB_ENV
 
