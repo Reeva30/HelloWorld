@@ -50,11 +50,21 @@ jobs:
     - name: Set up Qt environment
       run: cmd /c "${{ github.workspace }}\QT\QT\Tools\QtCreator\bin\qtenv2.bat"
 
+
+    - name: Set up Qt environment variables
+      run: |
+        echo "Setting up Qt environment variables"
+        echo "QT_HOME=${{ github.workspace }}\QT\QT" >> $GITHUB_ENV
+        echo "QTDIR=${{ github.workspace }}\QT\QT\5.15.2" >> $GITHUB_ENV
+        echo "QT_PLUGIN_PATH=${{ github.workspace }}\QT\QT\5.15.2\plugins" >> $GITHUB_ENV
+        echo "QML2_IMPORT_PATH=${{ github.workspace }}\QT\QT\5.15.2\qml" >> $GITHUB_ENV
+        echo "Path=${{ github.workspace }}\QT\QT\5.15.2\bin;$Env:Path" >> $GITHUB_ENV
+
     - name: Install CMake
       run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
 
     - name: Configure CMake
-      run: cmake -B build -S . -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH="${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64"
+      run: cmake -B build -S . -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH="${{ github.workspace }}\QT\5.15.2\msvc2019_64"
 
     - name: Build with CMake
       run: cmake --build build --config Debug
