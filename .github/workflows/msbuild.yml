@@ -8,7 +8,9 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
+      with:
+        ref: m
 
     - name: Set up Qt
       run: |
@@ -17,4 +19,4 @@ jobs:
 
     - name: Build with Visual Studio
       run: |
-        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe" HelloWorldProject.sln /Build "Release|x64"
+        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" HelloWorld.vcxproj /Build "Build|x64"
