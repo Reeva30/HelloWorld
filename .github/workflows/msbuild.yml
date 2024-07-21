@@ -39,8 +39,11 @@ jobs:
       run: dir "${{ github.workspace }}\QT"
 
     - name: List Tools directory contents
-      run: dir "${{ github.workspace }}\QT\QT\5.15.2"
+      run: dir "${{ github.workspace }}\QT\QT\bin"
 
+    - name: List Tools directory contents
+      run: dir "${{ github.workspace }}\QT\Qt\5.15.2\msvc2019_64"
+      
     - name: List Tools directory contents
       run: dir "${{ github.workspace }}\QT\QT\Tools"
       
@@ -53,7 +56,7 @@ jobs:
       run: |
         echo "Setting up Qt environment variables"
         echo "QT_HOME=${{ github.workspace }}\QT\QT" >> $GITHUB_ENV
-        echo "QTDIR=${{ github.workspace }}\QT\QT\bin" >> $GITHUB_ENV
+        echo "QTDIR=${{ github.workspace }}\QT\QT" >> $GITHUB_ENV
         echo "QT_PLUGIN_PATH=${{ github.workspace }}\QT\QT\5.15.2\plugins" >> $GITHUB_ENV
         echo "QML2_IMPORT_PATH=${{ github.workspace }}\QT\QT\5.15.2\qml" >> $GITHUB_ENV
         echo "Path=${{ github.workspace }}\QT\QT\5.15.2\bin;$Env:Path" >> $GITHUB_ENV
