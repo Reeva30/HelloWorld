@@ -25,7 +25,6 @@ jobs:
     - name: Install Qt
       run: choco install qt5-default --params "/InstallDir:C:\Qt"
 
-
     - name: Set Qt environment variables
       shell: powershell
       run: |
@@ -54,9 +53,9 @@ jobs:
     - name: Build with Visual Studio
       shell: cmd
       run: |
-        set INCLUDE=%INCLUDE%;C:\Qt\5.15.2\mingw81_64\include
-        set LIB=%LIB%;C:\Qt\5.15.2\mingw81_64\lib
-        set PATH=%PATH%;C:\Qt\5.15.2\mingw81_64\bin
+        set INCLUDE=%QT_DIR%\include;%INCLUDE%
+        set LIB=%QT_DIR%\lib;%LIB%
+        set PATH=%QT_DIR%\bin;%PATH%
         echo %INCLUDE%
         echo %LIB%
         echo %PATH%
