@@ -18,7 +18,7 @@ jobs:
     - name: Checkout DemoCI repository
       uses: actions/checkout@v4
       with:
-        repository: DemoCI
+        repository: Reeva30/DemoCI
         ref: Test
         path: DemoCI
 
