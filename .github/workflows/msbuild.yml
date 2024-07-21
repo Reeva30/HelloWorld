@@ -27,6 +27,9 @@ jobs:
     - name: Install Qt
       run: choco install qt5-default --params "/InstallDir:C:\Qt"
 
+    - name: Install Qt Creator
+      run: choco install qtcreator
+
     - name: Set Qt environment variables
       shell: powershell
       run: |
@@ -47,6 +50,8 @@ jobs:
         echo %QTDIR%
         echo %PATH%
         dir C:\Qt\5.15.2\mingw81_64
+        dir C:\Qt  
+
 
     - name: Set up MSVC environment
       shell: cmd
