@@ -38,7 +38,7 @@ jobs:
         [Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';$env:QT_DIR\bin;$env:MINGW_DIR\bin', 'Machine')
 
     - name: Refresh environment variables
-      shell: powershell
+      shell: cmd
       run: refreshenv
 
     - name: Verify Qt and MinGW installation and paths
