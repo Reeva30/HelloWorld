@@ -2,6 +2,12 @@ name: Build and Test
 
 on: [push, pull_request]
 
+env:
+  PROJECT_FILE_PATH: HelloWorld.vcxproj
+  BUILD_CONFIGURATION: Debug|x64 
+  DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.exe
+
+
 jobs:
   build:
     runs-on: windows-latest
@@ -19,4 +25,4 @@ jobs:
 
     - name: Build with Visual Studio
       run: |
-        "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com" HelloWorld.vcxproj /Build "Build|x64"
+          "%DEVENV_PATH%" "%PROJECT_FILE_PATH%" /Build "%BUILD_CONFIGURATION%"
