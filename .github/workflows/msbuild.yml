@@ -44,7 +44,7 @@ jobs:
         echo %QT_DIR%
         echo %PATH%
         dir C:\Qt\5.15.2
-        dir C:\Qt\5.15.2\msvc2019_64
+        dir C:\Qt\5.15.2\mingw81_64
 
     - name: Set up MSVC environment
       shell: cmd
