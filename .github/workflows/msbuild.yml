@@ -48,7 +48,7 @@ jobs:
       run: dir "${{ github.workspace }}\QT\5.15.2"
 
     - name: List QT directory contents
-      run: dir "${{ github.workspace }}\QT\5.15.2\msvc2019_64"
+      run: dir "${{ github.workspace }}\QT\5.15.2\msvc2019_64\bin"
       
     - name: List Tools directory contents
       run: dir "${{ github.workspace }}\QT\Tools"
