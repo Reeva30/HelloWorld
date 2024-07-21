@@ -61,9 +61,6 @@ jobs:
         echo "QML2_IMPORT_PATH=${{ github.workspace }}\QT\5.15.2\qml" >> $GITHUB_ENV
         echo "Path=${{ github.workspace }}\QT\5.15.2\bin;$Env:Path" >> $GITHUB_ENV
 
-    - name: Install Visual Studio 2022 Build Tools
-      run: choco install visualstudio2022buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional"
-
     - name: Build the solution with devenv.com
       run: |
         echo "Building the solution using devenv.com"
