@@ -47,8 +47,6 @@ jobs:
     - name: List QtCreator directory contents
       run: dir "${{ github.workspace }}\QT\QT\Tools\QtCreator\bin"
 
-    - name: Set up Qt environment
-      run: cmd /c "${{ github.workspace }}\QT\QT\Tools\QtCreator\bin\qtenv2.bat"
 
 
     - name: Set up Qt environment variables
