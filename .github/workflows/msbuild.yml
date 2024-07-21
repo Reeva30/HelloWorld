@@ -3,10 +3,7 @@ name: Build and Test
 on: [push, pull_request]
 
 env:
-  PROJECT_FILE_PATH: HelloWorld.vcxproj
-  BUILD_CONFIGURATION: Debug|x64
-  DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
-  QTDIR: C:\Qt\5.15.2\mingw81_64
+  QT_DIR: C:\Qt\5.15.2\mingw81_64
 
 jobs:
   build:
@@ -26,9 +23,6 @@ jobs:
 
     - name: Install Qt
       run: choco install qt5-default --params "/InstallDir:C:\Qt"
-
-    - name: Install Qt Creator
-      run: choco install qtcreator
 
     - name: Set Qt environment variables
       shell: powershell
@@ -55,13 +49,11 @@ jobs:
       shell: cmd
       run: call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
 
-    - name: Build with Visual Studio
-      shell: cmd
-      run: |
-        set INCLUDE=%QTDIR%\include;%INCLUDE%
-        set LIB=%QTDIR%\lib;%LIB%
-        set PATH=%QTDIR%\bin;%PATH%
-        echo %INCLUDE%
-        echo %LIB%
-        echo %PATH%
-        "%DEVENV_PATH%" "%PROJECT_FILE_PATH%" /Build "%BUILD_CONFIGURATION%"
+    - name: Install CMake
+      run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+
+    - name: Configure CMake
+      run: cmake -B build -S . -G "Visual Studio 16 2019" -A x64 -DCMAKE_PREFIX_PATH=%QTDIR%
+
+    - name: Build with CMake
+      run: cmake --build build --config Debug
