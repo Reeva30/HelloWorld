@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 env:
   QT_DIR: C:\Qt\5.15.2\mingw81_64
+  MINGW_DIR: C:\Qt\Tools\mingw81_64
 
 jobs:
   build:
@@ -12,8 +13,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      with:
-        ref: m
 
     - name: Install Chocolatey
       run: |
@@ -24,36 +23,37 @@ jobs:
     - name: Install Qt
       run: choco install qt5-default --params "/InstallDir:C:\Qt"
 
-    - name: Set Qt environment variables
+    - name: Install MinGW
+      run: choco install mingw --version=8.1.0
+
+    - name: Set Qt and MinGW environment variables
       shell: powershell
       run: |
-        echo "C:\Qt\5.15.2\mingw81_64\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\Qt\5.15.2\mingw81_64\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        echo "C:\Qt\5.15.2\mingw81_64\include" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-        [Environment]::SetEnvironmentVariable('QTDIR', 'C:\Qt\5.15.2\mingw81_64', 'Machine')
-        [Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';C:\Qt\5.15.2\mingw81_64\bin', 'Machine')
+        echo "$env:QT_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "$env:QT_DIR\lib" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "$env:QT_DIR\include" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        echo "$env:MINGW_DIR\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+        [Environment]::SetEnvironmentVariable('QTDIR', '$env:QT_DIR', 'Machine')
+        [Environment]::SetEnvironmentVariable('MINGW_DIR', '$env:MINGW_DIR', 'Machine')
+        [Environment]::SetEnvironmentVariable('PATH', $env:PATH + ';$env:QT_DIR\bin;$env:MINGW_DIR\bin', 'Machine')
 
     - name: Refresh environment variables
       shell: powershell
-      run: |
-        Import-Module "$env:ChocolateyInstall\helpers\chocolateyProfile.psm1"
-        refreshenv
+      run: refreshenv
 
-    - name: Verify Qt installation and paths
+    - name: Verify Qt and MinGW installation and paths
       run: |
         echo %QTDIR%
+        echo %MINGW_DIR%
         echo %PATH%
-        dir C:\Qt\5.15.2\mingw81_64
+        dir %QTDIR%
+        dir %MINGW_DIR%
 
     - name: Install CMake
       run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
 
-    - name: Set up MSVC environment
-      shell: cmd
-      run: call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
-
-    - name: Configure CMake
-      run: cmake -B build -S . -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH=%QTDIR%
+    - name: Configure CMake with MinGW
+      run: cmake -B build -S . -G "MinGW Makefiles" -DCMAKE_PREFIX_PATH=%QTDIR% -DCMAKE_CXX_COMPILER=%MINGW_DIR%\bin\g++.exe -DCMAKE_C_COMPILER=%MINGW_DIR%\bin\gcc.exe
 
     - name: Build with CMake
       run: cmake --build build --config Debug
