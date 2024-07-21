@@ -4,8 +4,9 @@ on: [push, pull_request]
 
 env:
   PROJECT_FILE_PATH: HelloWorld.vcxproj
-  BUILD_CONFIGURATION: Debug|x64 
+  BUILD_CONFIGURATION: Debug|x64
   DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
+  QT_DIR: C:\Qt\5.15.2\mingw81_64
 
 jobs:
   build:
@@ -20,7 +21,7 @@ jobs:
     - name: Install Chocolatey
       run: |
         Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-    
+
     - name: Install Qt
       run: choco install qt5-default --params "/InstallDir:C:\Qt"
 
