@@ -30,6 +30,7 @@ jobs:
     - name: Set up MSVC environment
       shell: cmd
       run: |
+        refreshenv
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\Tools\VsDevCmd.bat"
 
     - name: Build with Visual Studio
