@@ -1,55 +1,70 @@
-name: Build HelloWorld Qt Project
+name: Build and Test
 
-on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+on: [push, pull_request]
+
+env:
+  PROJECT_FILE_PATH: HelloWorld.vcxproj
+  BUILD_CONFIGURATION: "Debug|x64"
+  QT_MSBUILD: C:\Users\runneradmin\AppData\Local\QtMsBuild
+  DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    - name: Checkout code
+      uses: actions/checkout@v4
 
-    - name: Set up Qt
-      uses: jurplel/install-qt-action@v2
+    - name: Install Chocolatey
+      run: |
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+   
+    - name: Install Qt
+      uses: jurplel/install-qt-action@v4
       with:
         version: '5.15.2'
         host: 'windows'
         target: 'desktop'
         arch: 'win64_msvc2019_64'
-        modules: |
-          qtbase
-          qttools
+        dir: '${{ github.workspace }}/QT/'
+        install-deps: 'true'
+        modules: 'qtcharts qtwebengine'
+        archives: 'qtbase qtsvg'
+        cache: 'false'
+        cache-key-prefix: 'install-qt-action'
+        setup-python: 'true'
+        tools: 'tools_ifw tools_qtcreator,qt.tools.qtcreator'
+        set-env: 'true'
+        tools-only: 'false'
+        aqtversion: '==3.1.*'
 
-    - name: Set up MSVC
-      uses: ilammy/msvc-dev-cmd@v1
-      with:
-        arch: x64
-
-    - name: Configure Environment
+    - name: Copy QtMsBuild directory
       run: |
-        echo "QTDIR=${{ env.QT_INSTALL_DIR }}" >> $GITHUB_ENV
-        echo "QMAKESPEC=win32-msvc" >> $GITHUB_ENV
-        echo "CMAKE_PREFIX_PATH=${{ env.QT_INSTALL_DIR }}" >> $GITHUB_ENV
-        echo "${{ env.QT_INSTALL_DIR }}\\bin" >> $GITHUB_PATH
-
-    - name: Update project file with Qt paths
+        mkdir -p $Env:LOCALAPPDATA\QtMsBuild
+        xcopy /s /e "${{ github.workspace }}\QtMsBuild" "$Env:LOCALAPPDATA\QtMsBuild"
+    - name: Set up Qt environment variables
       run: |
-        sed -i 's|\$(QTDIR)|${{ env.QT_INSTALL_DIR }}|g' HelloWorld.vcxproj
-
-    - name: Build the solution
+        echo "Setting up Qt environment variables"
+        echo "QT_HOME=${{ github.workspace }}\QT\QT" >> $GITHUB_ENV
+        echo "QTDIR=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64" >> $GITHUB_ENV
+        echo "QT_PLUGIN_PATH=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64\plugins" >> $GITHUB_ENV
+        echo "QML2_IMPORT_PATH=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64\qml" >> $GITHUB_ENV
+        echo "Path=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64\bin;$Env:Path" >> $GITHUB_ENV
+        echo "INCLUDE=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64\include;$Env:INCLUDE" >> $GITHUB_ENV
+        echo "LIB=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64\lib;$Env:LIB" >> $GITHUB_ENV
+        echo "QtMsBuild=$Env:LOCALAPPDATA\QtMsBuild" >> $GITHUB_ENV
+  
+    - name: Build with devenv.com
       run: |
-        msbuild HelloWorldProject.sln /p:Configuration=Release /p:Platform=x64
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: hello-world-build
-        path: |
-          Release
+        $env:Path += ";C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE"
+        & "${{ env.DEVENV_PATH }}" ${{ env.PROJECT_FILE_PATH }} /Build "${{ env.BUILD_CONFIGURATION }}"
+    - name: Verify Build
+      run: |
+        if (Test-Path "${{ github.workspace }}\build\Debug\HelloWorld.exe") {
+          Write-Host "Build succeeded!"
+        } else {
+          Write-Error "Build failed."
+        }
