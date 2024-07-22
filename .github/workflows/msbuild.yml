@@ -66,8 +66,7 @@ jobs:
 
     - name: Build with MSBuild
       run: |
-        $env:Path += ";C:\\Program Files\\Microsoft Visual Studio\\2022\\BuildTools\\MSBuild\\Current\\Bin"
-        msbuild ${{ github.workspace }}\\${{ env.PROJECT_FILE_PATH }} /p:Configuration=${{ env.BUILD_CONFIGURATION }}
+        & "C:\Program Files\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe" ${{ github.workspace }}\\${{ env.PROJECT_FILE_PATH }} /p:Configuration=${{ env.BUILD_CONFIGURATION }}
 
     - name: Verify Build
       run: |
