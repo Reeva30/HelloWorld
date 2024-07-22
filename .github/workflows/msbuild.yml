@@ -67,7 +67,7 @@ jobs:
     - name: Build with devenv.com
       run: |
         $env:Path += ";C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE"
-        & "${{ env.DEVENV_PATH }}" ${{ github.workspace }}\build\${{ env.PROJECT_FILE_PATH }} /Build "${{ env.BUILD_CONFIGURATION }}"
+        & "${{ env.DEVENV_PATH }}" ${{ env.PROJECT_FILE_PATH }} /Build "${{ env.BUILD_CONFIGURATION }}"
 
     - name: Verify Build
       run: |
