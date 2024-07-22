@@ -3,9 +3,9 @@ name: Build and Test
 on: [push, pull_request]
 
 env:
-  PROJECT_FILE_PATH: HelloWorld.vcxproj
+  PROJECT_FILE_PATH: HelloWorld.sln
   BUILD_CONFIGURATION: "Debug|x64"
-  DEVENV_PATH: "C:\\Program Files\\Microsoft Visual Studio\\2022\\Enterprise\\Common7\\IDE\\devenv.com"
+  DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\devenv.com
 
 jobs:
   build:
@@ -20,6 +20,12 @@ jobs:
         Set-ExecutionPolicy Bypass -Scope Process -Force
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+    - name: Install CMake
+      run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+      
+    - name: Install Visual Studio 2022 Build Tools
+      run: choco install visualstudio2022buildtools --package-parameters "--allWorkloads --includeRecommended --includeOptional"
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
@@ -43,30 +49,17 @@ jobs:
     - name: List QT directory contents
       run: dir "${{ github.workspace }}\QT"
 
-    - name: List Tools directory contents
-      run: dir "${{ github.workspace }}\QT\QT\5.15.2"
-
-    - name: List Tools directory contents
-      run: dir "${{ github.workspace }}\QT\QT\Tools"
-      
-    - name: List QtCreator directory contents
-      run: dir "${{ github.workspace }}\QT\QT\Tools\QtCreator\bin"
-
     - name: Set up Qt environment variables
       run: |
         echo "Setting up Qt environment variables"
         echo "QT_HOME=${{ github.workspace }}\QT\QT" >> $GITHUB_ENV
-        echo "QTDIR=${{ github.workspace }}\QT\QT\bin" >> $GITHUB_ENV
+        echo "QTDIR=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64" >> $GITHUB_ENV
         echo "QT_PLUGIN_PATH=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64\plugins" >> $GITHUB_ENV
         echo "QML2_IMPORT_PATH=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64\qml" >> $GITHUB_ENV
         echo "Path=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64\bin;$Env:Path" >> $GITHUB_ENV
         echo "INCLUDE=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64\include;$Env:INCLUDE" >> $GITHUB_ENV
         echo "LIB=${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64\lib;$Env:LIB" >> $GITHUB_ENV
 
-    - name: Install CMake
-      run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
-      
-  
     - name: Configure CMake
       run: cmake -B build -S . -G "Visual Studio 17 2022" -A x64 -DCMAKE_PREFIX_PATH="${{ github.workspace }}\QT\QT\5.15.2\msvc2019_64"
 
