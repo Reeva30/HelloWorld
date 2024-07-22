@@ -18,6 +18,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{7de4a1cf-6c2d-4539-8ca5-31f6263fe8db}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
+    <QtMsBuild Condition="'$(QtMsBuild)'=='' OR !Exists('$(QtMsBuild)\qt.targets')">%QTMSBUILD_PATH%\QtMsBuild</QtMsBuild>
     <RootNamespace>HelloWorld</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
