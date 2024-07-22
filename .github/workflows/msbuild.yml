@@ -61,6 +61,7 @@ jobs:
         echo "QML2_IMPORT_PATH=${{ github.workspace }}\QT\QT\5.15.2\qml" >> $GITHUB_ENV
         echo "Path=${{ github.workspace }}\QT\QT\5.15.2\bin;$Env:Path" >> $GITHUB_ENV
 
+
     - name: Install CMake
       run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
 
