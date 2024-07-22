@@ -3,10 +3,10 @@ name: Build HelloWorld Qt Project
 on:
   push:
     branches:
-      - m
+      - main
   pull_request:
     branches:
-      - m
+      - main
 
 jobs:
   build:
@@ -35,7 +35,13 @@ jobs:
     - name: Configure Environment
       run: |
         echo "QTDIR=${{ env.QT_INSTALL_DIR }}" >> $GITHUB_ENV
-        echo "CMAKE_PREFIX_PATH=${{ env.QT_INSTALL_DIR }};${{ env.CMAKE_PREFIX_PATH }}" >> $GITHUB_ENV
+        echo "QMAKESPEC=win32-msvc" >> $GITHUB_ENV
+        echo "CMAKE_PREFIX_PATH=${{ env.QT_INSTALL_DIR }}" >> $GITHUB_ENV
+        echo "${{ env.QT_INSTALL_DIR }}\\bin" >> $GITHUB_PATH
+
+    - name: Update project file with Qt paths
+      run: |
+        sed -i 's|\$(QTDIR)|${{ env.QT_INSTALL_DIR }}|g' HelloWorld.vcxproj
 
     - name: Build the solution
       run: |
