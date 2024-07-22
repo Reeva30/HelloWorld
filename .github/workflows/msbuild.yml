@@ -23,7 +23,10 @@ jobs:
         iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 
     - name: Install CMake
-      run: choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
+      run: |
+        dir "C:\Program Files\Microsoft Visual Studio\2022"
+        dir "C:\Program Files\Microsoft Visual Studio\2022\BuildTools"
+        choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
 
     - name: Install Qt
       uses: jurplel/install-qt-action@v4
