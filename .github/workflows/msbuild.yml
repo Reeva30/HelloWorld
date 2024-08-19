@@ -1,57 +1,91 @@
-name: Build Qt Project
+name: MSBuild
 
 on:
   push:
-    branches:
-      - main
-      - Test
   pull_request:
-    branches:
-      - main
-      - Test
+
+env:
+  DEVENV_PATH: C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE
+
+permissions:
+  contents: read
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
+    
+    - name: Check out the project repository
+      uses: actions/checkout@v4
       with:
+        repository: OT-OpenTwin/OpenTwin
         ref: Test
+        path: OpenTwin
 
-    - name: Setup Visual Studio 2022
-      uses: ilammy/msvc-dev-cmd@v1
+    - name: Cache third-party repository
+      id: cache-thirdparty
+      uses: actions/cache@v3
       with:
-        arch: x64
+        path: ThirdParty
+        key: ${{ runner.os }}-thirdparty-${{ hashFiles('path/to/commit-file-or-similar.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-thirdparty-
 
-    - name: Set up Qt environment variables
+    - name: Check out the third-party repository if cache was missed
+      if: steps.cache-thirdparty.outputs.cache-hit != 'true'
+      uses: actions/checkout@v4
+      with:
+        repository: OT-OpenTwin/ThirdParty
+        path: ThirdParty
+
+
+    - name: Install Rust 1.76.0
       run: |
-        echo "QTDIR=C:\\Qt\\6.2.4\\msvc2019_64" >> $GITHUB_ENV
-        echo "PATH=$env:PATH;C:\\Qt\\6.2.4\\msvc2019_64\\bin" >> $GITHUB_ENV
+        choco install rust --version=1.76.0 -y
+      shell: cmd
 
-    - name: Copy QtMsBuild directory
+    - name: Add Visual Studio 2022
+      uses: microsoft/setup-msbuild@v1.0.2
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+          python-version: '3.x'
+
+    - name: Install Sphinx and dependencies
       run: |
-        Copy-Item -Recurse -Force "${{ github.workspace }}\QtMsBuild" "$env:LOCALAPPDATA\QtMsBuild"
-        echo "QtMsBuild=$env:LOCALAPPDATA\\QtMsBuild" >> $GITHUB_ENV
+          python -m pip install --upgrade pip
+          pip install sphinx sphinx-rtd-theme
 
-    - name: Set DefaultQtVersion environment variable
+    - name: Setup and Execute Build
+      shell: cmd
       run: |
-        echo "DefaultQtVersion=C:\\Qt\\6.2.4\\msvc2019_64" >> $GITHUB_ENV
+        echo "Current directory: %cd%"
+        set OPENTWIN_DEV_ROOT=%cd%\OpenTwin
+        set DEVENV_ROOT_2022=%DEVENV_PATH%
+        set OPENTWIN_THIRDPARTY_ROOT=%cd%\ThirdParty
+        set QtMsBuild=%cd%\OpenTwin\QtMsBuild
+        echo "Starting BuildAll.bat..."
+        call %OPENTWIN_DEV_ROOT%\Scripts\BuildAndTest\BuildAll.bat 
 
-    - name: Import Qt version registry settings
-      run: reg import "${{ github.workspace }}\QT_Version.reg"
+    - name: Upload build log Debug artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log-Debug
+        path: ${{ github.workspace }}\OpenTwin\Scripts\BuildAndTest\buildLog_Debug.txt
 
-    - name: Verify Qt setup
-      run: |
-        echo "QTDIR=$QTDIR"
-        echo "QtMsBuild=$QtMsBuild"
-        echo "DefaultQtVersion=$DefaultQtVersion"
-        if (-not (Test-Path "$env:QTDIR\\bin\\qmake.exe")) {
-          throw "qmake.exe not found in $env:QTDIR\\bin"
-        }
-        & "$env:QTDIR\\bin\\qmake.exe" -v
+    - name: Upload build log Release artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log-Release
+        path: ${{ github.workspace }}\OpenTwin\Scripts\BuildAndTest\buildLog_Release.txt
 
-    - name: Build the project using msbuild
-      run: |
-        msbuild /p:Configuration=Release /p:Platform=x64 path\to\your\solution.sln
+    - name: Upload build log summary artifact
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log-summary
+        path: ${{ github.workspace }}\OpenTwin\Scripts\BuildAndTest\buildLog_Summary.txt
